@@ -90,6 +90,8 @@ class Board:
         
         for row in range(0, 10, 1):
             for col in range(0, 10, 1):
+                
+                """ T """
                 if board[row][col] == "T":
                     board[row + 1][col] = "m"
                     if row == 0:
@@ -117,16 +119,7 @@ class Board:
                             board[row +1][col +1] = "."
                             if row != 8: board[row +2][col +1] = "."
                   
-                  
-                if board[row][col] == "M":
-                    if col != 0:
-                        board[row - 1][col -1] = "."
-                        board[row - 1][col +1] = "."
-                    if col != 9:
-                        board[row + 1][col -1] = "."
-                        board[row + 1][col +1] = "."
-                    
-
+                """ B """
                 if board[row][col] == "B":
                     board[row - 1][col] = "m"
                     if row == 9:
@@ -154,8 +147,77 @@ class Board:
                             board[row][col +1] = "."
                             board[row +1][col +1] = "."
 
+                """ L """
+                if board[row][col] == "L":
+                    board[row][col +1] = "m"
+                    if col == 0:
+                        if 0 < row:
+                            board[row -1][col -1] = "."
+                            board[row -1][col] = "."
+                            board[row -1][col +1] = "."
+                            board[row -1][col +2] = "."
 
+                        if row < 9:
+                            board[row +1][col -1] = "."
+                            board[row +1][col] = "."
+                            board[row +1][col +1] = "."
+                            board[row +1][col +2] = "."
 
+                    if 0 < col < 9:
+                        board[row][col -1] = "."
+                        if 0 < row:
+                            board[row -1][col -1] = "."
+                            board[row -1][col] = "."
+                            board[row -1][col +1] = "."
+                            if col != 8: board[row -1][col +2] = "."
+                            
+                        if row < 9:
+                            board[row +1][col -1] = "."
+                            board[row +1][col] = "."
+                            board[row +1][col +1] = "."
+                            if col != 8: board[row +1][col +2] = "."
+
+                """ R """
+                if board[row][col] == "R":
+                    board[row][col -1] = "m"
+                    if col == 9:
+                        if 0 < row:
+                            board[row -1][col -2] = "."
+                            board[row -1][col -1] = "."
+                            board[row -1][col] = "."
+                            board[row -1][col +1] = "."
+
+                        if row < 9:             
+                            board[row +1][col -2] = "."
+                            board[row +1][col -1] = "."
+                            board[row +1][col] = "."
+                            board[row +1][col +1] = "."
+
+                    if 0 < col < 9:
+                        board[row][col +1] = "."
+                        if 0 < row:
+                            if col != 1: board[row -1][col -2] = "."
+                            board[row -1][col -1] = "."
+                            board[row -1][col] = "."
+                            board[row -1][col +1] = "."
+                            
+                        if row < 9:
+                            if col != 1: board[row +1][col -2] = "."
+                            board[row +1][col -1] = "."
+                            board[row +1][col] = "."
+                            board[row +1][col +1] = "."
+
+                """ M """
+                if board[row][col] == "M":
+                    if col != 0:
+                        board[row - 1][col -1] = "."
+                        board[row - 1][col +1] = "."
+                    if col != 9:
+                        board[row + 1][col -1] = "."
+                        board[row + 1][col +1] = "."
+                    
+
+                """ C """
                 if board[row][col] == "C":
                     board[row][col -1] = "."
                     board[row][col +1] = "."
@@ -166,11 +228,8 @@ class Board:
                     if row != 9:
                         board[row +1][col -1] = "."
                         board[row +1][col] = "."
-                        board[row +1][col +1] = "." 
-             
+                        board[row +1][col +1] = "."              
         return board
-
-
 
     @staticmethod
     def parse_instance():
