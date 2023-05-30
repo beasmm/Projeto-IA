@@ -122,7 +122,6 @@ class Board:
                         board[row +1][col -1] = "w"
                         board[row +1][col] = "w"
                         board[row +1][col +1] = "w" 
-
         return board
 
 
@@ -190,10 +189,11 @@ class Bimaru(Problem):
 
 if __name__ == "__main__":
     board = Board.actions_initial()
-    for row in board:
-        for col in row:
-            print(col, end=" ")
-        print()
+    bimaru = Bimaru(board)
+    bimaru.actions()
+    bimaru.result()
+    
+
    
      
 
