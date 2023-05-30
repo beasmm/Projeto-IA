@@ -68,6 +68,32 @@ class Board:
         else:
             return self.board[row][col - 1], self.board[row][col + 1]
 
+    
+    @staticmethod
+    def actions_initial():
+        """ Completa as primeiras ações possiveis """
+        board = Board.parse_instance()
+        
+        for col in range(0, 10, 1):
+            """ Preenche linha inteira de água """
+            if board[col][10] == "0":
+                for row in range(0, 10, 1):
+                    if board[col][row] == ".":
+                        board[col][row] = "W"
+
+        for row in range(0, 10, 1):
+            """ Preenche coluna inteira de água """
+            if board[10][row] == "0":
+                for col in range(0, 10, 1):
+                    if board[col][row] == ".":
+                        board[col][row] = "W"
+
+
+
+        
+        return board
+
+
 
     @staticmethod
     def parse_instance():
@@ -131,22 +157,13 @@ class Bimaru(Problem):
 
 
 if __name__ == "__main__":
-    board = Board.parse_instance()
-    board = Board
+    board = Board.actions_initial()
     for row in board:
         for col in row:
             print(col, end=" ")
         print()
    
-     def actions_initial(self, board: Board):
-        """ Completa as primeiras ações possiveis """
-        self.board = board
-        for i in range(0, 10, 1):
-            if board[10][i] == "0":
-                for column in range(0, 10, 1):
-                    if board[column][i] == ".":
-                        board[column][i] = "W"
-        return board
+     
 
     
     # TODO:
