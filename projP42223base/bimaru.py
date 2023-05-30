@@ -106,6 +106,11 @@ class Board:
                     
                 if board[row][col] == "B":
                     board[row -1][col] = "m"
+                    board[row][col +1] = "w"
+                    board[row][col -1] = "w"
+                    board[row -1][col+1] = "w"
+                    board[row -1][col-1] = "w"
+
                     if row != 10:
                         board[row +1][col -1] = "w"
                         board[row +1][col] = "w"
@@ -161,8 +166,7 @@ class Bimaru(Problem):
     def actions(self, state: BimaruState):
         """Retorna uma lista de ações que podem ser executadas a
         partir do estado passado como argumento."""
-        # TODO
-        pass
+        
 
     def result(self, state: BimaruState, action):
         """Retorna o estado resultante de executar a 'action' sobre
@@ -195,6 +199,16 @@ class Bimaru(Problem):
 if __name__ == "__main__":
     board = Board.actions_initial()
     state = Bimaru(board)
+    actions = state.actions()
+
+
+
+    for row in range(0, 11, 1):
+        for col in range(0, 11, 1):
+            print(board[row][col], end=" ")
+        print()
+
+
     """ state.actions()
     state.result() """
     
