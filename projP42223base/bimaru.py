@@ -39,7 +39,7 @@ class Board:
 
     def get_value(self, row: int, col: int) -> str:
         """Devolve o valor na respetiva posição do tabuleiro."""
-        if self.board[row][col] == ".":
+        if self.board[row][col] == "□":
             return None
         else:
             return self.board[row][col]
@@ -78,55 +78,55 @@ class Board:
             """ Preenche linha inteira de água """
             if board[row][10] == "0":
                 for col in range(0, 10, 1):
-                    if board[row][col] == ".":
-                        board[row][col] = "w"
+                    if board[row][col] == "□":
+                        board[row][col] = "."
 
         for col in range(0, 10, 1):
             """ Preenche coluna inteira de água """
             if board[10][col] == "0":
                 for row in range(0, 10, 1):
-                    if board[row][col] == ".":
-                        board[row][col] = "w"
+                    if board[row][col] == "□":
+                        board[row][col] = "."
         
         for row in range(0, 10, 1):
             for col in range(0, 10, 1):
                 if board[row][col] == "T":
                     board[row + 1][col] = "m"
                     if row != 0:
-                        board[row - 1][col - 1] = "w"
-                        board[row - 1][col] = "w"
-                        board[row - 1][col + 1] = "w"
+                        board[row - 1][col - 1] = "."
+                        board[row - 1][col] = "."
+                        board[row - 1][col + 1] = "."
 
                   
                 if board[row][col] == "M":
-                    board[row - 1][col -1] = "w"
-                    board[row - 1][col +1] = "w"
-                    board[row + 1][col -1] = "w"
-                    board[row + 1][col +1] = "w"
+                    board[row - 1][col -1] = "."
+                    board[row - 1][col +1] = "."
+                    board[row + 1][col -1] = "."
+                    board[row + 1][col +1] = "."
                     
                 if board[row][col] == "B":
                     board[row -1][col] = "m"
-                    board[row][col +1] = "w"
-                    board[row][col -1] = "w"
-                    board[row -1][col+1] = "w"
-                    board[row -1][col-1] = "w"
+                    board[row][col +1] = "."
+                    board[row][col -1] = "."
+                    board[row -1][col+1] = "."
+                    board[row -1][col-1] = "."
 
                     if row != 10:
-                        board[row +1][col -1] = "w"
-                        board[row +1][col] = "w"
-                        board[row +1][col +1] = "w" 
+                        board[row +1][col -1] = "."
+                        board[row +1][col] = "."
+                        board[row +1][col +1] = "." 
 
                 if board[row][col] == "C":
                     if row != 0:
-                        board[row - 1][col - 1] = "w"
-                        board[row - 1][col] = "w"
-                        board[row - 1][col + 1] = "w"
-                    board[row][col -1] = "w"
-                    board[row][col +1] = "w"
+                        board[row - 1][col - 1] = "."
+                        board[row - 1][col] = "."
+                        board[row - 1][col + 1] = "."
+                    board[row][col -1] = "."
+                    board[row][col +1] = "."
                     if row != 9:
-                        board[row +1][col -1] = "w"
-                        board[row +1][col] = "w"
-                        board[row +1][col +1] = "w" 
+                        board[row +1][col -1] = "."
+                        board[row +1][col] = "."
+                        board[row +1][col +1] = "." 
         return board
 
 
@@ -142,7 +142,7 @@ class Board:
             > from sys import stdin
             > line = stdin.readline().split()
         """
-        board = [["."] * 11 for _ in range(11)]
+        board = [["□"] * 11 for _ in range(11)]
         line = sys.stdin.readline().split()
         while line != []:
             if line[0] == "ROW":
@@ -198,9 +198,9 @@ class Bimaru(Problem):
 
 if __name__ == "__main__":
     board = Board.actions_initial()
-    state = Bimaru(board)
+    """ state = Bimaru(board)
     actions = state.actions()
-
+    """
 
 
     for row in range(0, 11, 1):
