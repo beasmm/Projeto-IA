@@ -169,6 +169,11 @@ class Bimaru(Problem):
         'state' passado como argumento. A ação a executar deve ser uma
         das presentes na lista obtida pela execução de
         self.actions(state)."""
+        
+        
+        
+        
+        
         # TODO
         pass
 
@@ -189,9 +194,9 @@ class Bimaru(Problem):
 
 if __name__ == "__main__":
     board = Board.actions_initial()
-    bimaru = Bimaru(board)
-    bimaru.actions()
-    bimaru.result()
+    state = Bimaru(board)
+    """ state.actions()
+    state.result() """
     
 
    
