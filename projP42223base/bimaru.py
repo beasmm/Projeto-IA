@@ -44,25 +44,29 @@ class Board:
         else:
             return self.board[row][col]
 
-    def adjacent_vertical_values(self, row: int, col: int): 
-        """-> (str, str)"""
+    def adjacent_vertical_values(self, row: int, col: int) -> (str, str):
         """Devolve os valores imediatamente acima e abaixo,
         respectivamente."""
-        if self.row == 0 or self.[row - 1][col] == "":
+        if self.row == 0 or self.board[row - 1][col] == "":
             return None, self.board[row + 1][col]
-        elif self.row == 9:
+        elif self.row == 9 or self.board[row + 1][col] == "":
             return self.board[row - 1][col], None
-        
-        elif self.[row + 1][col] == "" and self.[row - 1][col] == "":
+        elif self.board[row + 1][col] == "" and self.board[row - 1][col] == "":
             return None, None
-        pass
+        else:
+            return self.board[row - 1][col], self.board[row + 1][col]
 
-    def adjacent_horizontal_values(self, row: int, col: int):
-        """ -> (str, str)"""
+    def adjacent_horizontal_values(self, row: int, col: int) -> (str, str):
         """Devolve os valores imediatamente à esquerda e à direita,
         respectivamente."""
-        # TODO
-        pass
+        if self.col == 0 or self.board[row][col - 1] == "":
+            return None, self.board[row + 1][col]
+        elif self.col == 9 or self.board[row][col + 1] == "":
+            return self.board[row][col - 1], None
+        elif self.board[row][col - 1] == "" and self.board[row][col + 1] == "":
+            return None, None
+        else:
+            return self.board[row][col - 1], self.board[row][col + 1]
 
 
     @staticmethod
