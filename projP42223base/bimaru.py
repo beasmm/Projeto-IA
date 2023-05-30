@@ -63,17 +63,25 @@ class Board:
             > from sys import stdin
             > line = stdin.readline().split()
         """
-        # TODO
-        pass
+        board = [10][10]
+        while line != "":
+            line = sys.stdin.readline().split()
+            if line[0] == "ROW":
+                for i in range(1, 10, 1):
+                    board[i][10] = line[i]
+            elif line[0] == "COLUMN":
+                for i in range(2, 10, 1):
+                    board[10][i] = line[i]
+            elif line[0] == "HINT":
+                board[line[1]][line[2]] = line[3]
+        return board
 
-    # TODO: outros metodos da classe
 
 
 class Bimaru(Problem):
     def __init__(self, board: Board):
         """O construtor especifica o estado inicial."""
-        # TODO
-        pass
+        self.initial = BimaruState(board)
 
     def actions(self, state: BimaruState):
         """Retorna uma lista de ações que podem ser executadas a
@@ -105,6 +113,10 @@ class Bimaru(Problem):
 
 
 if __name__ == "__main__":
+    board = Board.parse_instance()
+    bimaru = Bimaru(board)
+
+    
     # TODO:
     # Ler o ficheiro do standard input,
     # Usar uma técnica de procura para resolver a instância,
