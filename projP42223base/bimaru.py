@@ -2,9 +2,9 @@
 # Devem alterar as classes e funções neste ficheiro de acordo com as instruções do enunciado.
 # Além das funções e classes já definidas, podem acrescentar outras que considerem pertinentes.
 
-# Grupo 00:
-# 00000 Nome1
-# 00000 Nome2
+# Grupo 83:
+# 103011 André Oliveira
+# 103120 Beatriz Mendes
 
 import sys
 
@@ -92,41 +92,82 @@ class Board:
             for col in range(0, 10, 1):
                 if board[row][col] == "T":
                     board[row + 1][col] = "m"
-                    if row != 0:
-                        board[row - 1][col - 1] = "."
-                        board[row - 1][col] = "."
-                        board[row - 1][col + 1] = "."
+                    if row == 0:
+                        if 0 < col:
+                            board[row][col -1] = "."
+                            board[row +1][col -1] = "."
+                            board[row +2][col -1] = "."
+                            
+                        if col < 9:
+                            board[row][col +1] = "."
+                            board[row +1][col +1] = "."
+                            board[row +2][col +1] = "."
 
+                    if 0 < row < 9:
+                        board[row -1][col] = "."
+                        if 0 < col:
+                            board[row -1][col -1] = "."
+                            board[row][col -1] = "."
+                            board[row +1][col -1] = "."
+                            if row != 8: board[row +2][col -1] = "."
+                            
+                        if col < 9:
+                            board[row -1][col +1] = "."
+                            board[row][col +1] = "."
+                            board[row +1][col +1] = "."
+                            if row != 8: board[row +2][col +1] = "."
+                  
                   
                 if board[row][col] == "M":
-                    board[row - 1][col -1] = "."
-                    board[row - 1][col +1] = "."
-                    board[row + 1][col -1] = "."
-                    board[row + 1][col +1] = "."
+                    if col != 0:
+                        board[row - 1][col -1] = "."
+                        board[row - 1][col +1] = "."
+                    if col != 9:
+                        board[row + 1][col -1] = "."
+                        board[row + 1][col +1] = "."
                     
-                if board[row][col] == "B":
-                    board[row -1][col] = "m"
-                    board[row][col +1] = "."
-                    board[row][col -1] = "."
-                    board[row -1][col+1] = "."
-                    board[row -1][col-1] = "."
 
-                    if row != 10:
-                        board[row +1][col -1] = "."
+                if board[row][col] == "B":
+                    board[row - 1][col] = "m"
+                    if row == 9:
+                        if 0 < col:
+                            board[row][col +1] = "."
+                            board[row -1][col +1] = "."
+                            board[row -2][col +1] = "."
+                            
+                        if col < 9:
+                            board[row][col -1] = "."
+                            board[row -1][col -1] = "."
+                            board[row -2][col -1] = "."
+
+                    if 0 < row < 9:
                         board[row +1][col] = "."
-                        board[row +1][col +1] = "." 
+                        if 0 < col:
+                            if row != 1: board[row -2][col -1] = "."
+                            board[row -1][col -1] = "."
+                            board[row][col -1] = "."
+                            board[row +1][col -1] = "."
+                            
+                        if col < 9:
+                            if row != 1: board[row -2][col +1] = "."
+                            board[row -1][col +1] = "."
+                            board[row][col +1] = "."
+                            board[row +1][col +1] = "."
+
+
 
                 if board[row][col] == "C":
+                    board[row][col -1] = "."
+                    board[row][col +1] = "."
                     if row != 0:
                         board[row - 1][col - 1] = "."
                         board[row - 1][col] = "."
                         board[row - 1][col + 1] = "."
-                    board[row][col -1] = "."
-                    board[row][col +1] = "."
                     if row != 9:
                         board[row +1][col -1] = "."
                         board[row +1][col] = "."
                         board[row +1][col +1] = "." 
+             
         return board
 
 
