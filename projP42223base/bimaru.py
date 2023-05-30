@@ -74,23 +74,55 @@ class Board:
         """ Completa as primeiras ações possiveis """
         board = Board.parse_instance()
         
-        for col in range(0, 10, 1):
-            """ Preenche linha inteira de água """
-            if board[col][10] == "0":
-                for row in range(0, 10, 1):
-                    if board[col][row] == ".":
-                        board[col][row] = "W"
-
         for row in range(0, 10, 1):
-            """ Preenche coluna inteira de água """
-            if board[10][row] == "0":
+            """ Preenche linha inteira de água """
+            if board[row][10] == "0":
                 for col in range(0, 10, 1):
-                    if board[col][row] == ".":
-                        board[col][row] = "W"
+                    if board[row][col] == ".":
+                        board[row][col] = "w"
 
-
-
+        for col in range(0, 10, 1):
+            """ Preenche coluna inteira de água """
+            if board[10][col] == "0":
+                for row in range(0, 10, 1):
+                    if board[row][col] == ".":
+                        board[row][col] = "w"
         
+        for row in range(0, 10, 1):
+            for col in range(0, 10, 1):
+                if board[row][col] == "T":
+                    board[row + 1][col] = "m"
+                    if row != 0:
+                        board[row - 1][col - 1] = "w"
+                        board[row - 1][col] = "w"
+                        board[row - 1][col + 1] = "w"
+
+                  
+                if board[row][col] == "M":
+                    board[row - 1][col -1] = "w"
+                    board[row - 1][col +1] = "w"
+                    board[row + 1][col -1] = "w"
+                    board[row + 1][col +1] = "w"
+                    
+                if board[row][col] == "B":
+                    board[row -1][col] = "m"
+                    if row != 10:
+                        board[row +1][col -1] = "w"
+                        board[row +1][col] = "w"
+                        board[row +1][col +1] = "w" 
+
+                if board[row][col] == "C":
+                    if row != 0:
+                        board[row - 1][col - 1] = "w"
+                        board[row - 1][col] = "w"
+                        board[row - 1][col + 1] = "w"
+                    board[row][col -1] = "w"
+                    board[row][col +1] = "w"
+                    if row != 9:
+                        board[row +1][col -1] = "w"
+                        board[row +1][col] = "w"
+                        board[row +1][col +1] = "w" 
+
         return board
 
 
