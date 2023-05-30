@@ -37,13 +37,21 @@ class Board:
 
     def get_value(self, row: int, col: int) -> str:
         """Devolve o valor na respetiva posição do tabuleiro."""
-        # TODO
-        pass
+        if self.board[row][col] == ".":
+            return None
+        else:
+            return self.board[row][col]
 
     def adjacent_vertical_values(self, row: int, col: int) -> (str, str):
         """Devolve os valores imediatamente acima e abaixo,
         respectivamente."""
-        # TODO
+        if self.row == 0 or self.[row - 1][col] == "":
+            return None, self.board[row + 1][col]
+        elif self.row == 9:
+            return self.board[row - 1][col], None
+        
+        elif self.[row + 1][col] == "" and self.[row - 1][col] == "":
+            return None, None
         pass
 
     def adjacent_horizontal_values(self, row: int, col: int) -> (str, str):
