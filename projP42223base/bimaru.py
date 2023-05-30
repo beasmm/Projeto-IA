@@ -40,13 +40,15 @@ class Board:
         # TODO
         pass
 
-    def adjacent_vertical_values(self, row: int, col: int) -> (str, str):
+    def adjacent_vertical_values(self, row: int, col: int): 
+        """-> (str, str)"""
         """Devolve os valores imediatamente acima e abaixo,
         respectivamente."""
         # TODO
         pass
 
-    def adjacent_horizontal_values(self, row: int, col: int) -> (str, str):
+    def adjacent_horizontal_values(self, row: int, col: int):
+        """ -> (str, str)"""
         """Devolve os valores imediatamente à esquerda e à direita,
         respectivamente."""
         # TODO
@@ -114,7 +116,9 @@ class Bimaru(Problem):
 
 if __name__ == "__main__":
     board = Board.parse_instance()
-    bimaru = Bimaru(board)
+    for i in range(10):
+        for j in range(10):
+            print(board[i][j])
 
     
     # TODO:
