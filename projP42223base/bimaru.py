@@ -56,6 +56,7 @@ class Board:
         # TODO
         pass
 
+
     @staticmethod
     def parse_instance():
         """Lê o test do standard input (stdin) que é passado como argumento
@@ -69,7 +70,6 @@ class Board:
         """
         board = [["."] * 11 for _ in range(11)]
         line = sys.stdin.readline().split()
-        print(line[0])
         while line != []:
             if line[0] == "ROW":
                 for i in range(0, 10, 1):
@@ -120,11 +120,21 @@ class Bimaru(Problem):
 
 if __name__ == "__main__":
     board = Board.parse_instance()
+    board = Board
     for row in board:
-        for column in row:
-            print(column, end=" ")
+        for col in row:
+            print(col, end=" ")
         print()
-    
+   
+     def actions_initial(self, board: Board):
+        """ Completa as primeiras ações possiveis """
+        self.board = board
+        for i in range(0, 10, 1):
+            if board[10][i] == "0":
+                for column in range(0, 10, 1):
+                    if board[column][i] == ".":
+                        board[column][i] = "W"
+        return board
 
     
     # TODO:
