@@ -7,6 +7,8 @@
 # 00000 Nome2
 
 import sys
+
+from pexpect import EOF
 from search import (
     Problem,
     Node,
@@ -65,17 +67,19 @@ class Board:
             > from sys import stdin
             > line = stdin.readline().split()
         """
-        board = [10][10]
-        while line != "":
-            line = sys.stdin.readline().split()
+        board = [["."] * 11 for _ in range(11)]
+        line = sys.stdin.readline().split()
+        print(line[0])
+        while line != []:
             if line[0] == "ROW":
-                for i in range(1, 10, 1):
-                    board[i][10] = line[i]
+                for i in range(0, 10, 1):
+                    board[i][10] = line[i+1]
             elif line[0] == "COLUMN":
-                for i in range(2, 10, 1):
-                    board[10][i] = line[i]
+                for i in range(0, 10, 1):
+                    board[10][i] = line[i+1]
             elif line[0] == "HINT":
-                board[line[1]][line[2]] = line[3]
+                board[int(line[1])][int(line[2])] = line[3]
+            line = sys.stdin.readline().split()
         return board
 
 
@@ -116,9 +120,11 @@ class Bimaru(Problem):
 
 if __name__ == "__main__":
     board = Board.parse_instance()
-    for i in range(10):
-        for j in range(10):
-            print(board[i][j])
+    for row in board:
+        for column in row:
+            print(column, end=" ")
+        print()
+    
 
     
     # TODO:
