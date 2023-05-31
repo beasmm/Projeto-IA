@@ -37,6 +37,10 @@ class BimaruState:
 class Board:
     """Representação interna de um tabuleiro de Bimaru."""
 
+    def __init__(self):
+        self.board = [["□"] * 11 for _ in range(11)]
+
+
     def get_value(self, row: int, col: int) -> str:
         """Devolve o valor na respetiva posição do tabuleiro."""
         if self.board[row][col] == "□":
@@ -69,190 +73,215 @@ class Board:
             return self.board[row][col - 1], self.board[row][col + 1]
 
     
-    def check_rows(board, row: int) -> bool:
+    def check_rows(self, row: int):
         """Verifica se o número de barcos numa linha está correto."""
         """ print(type(board[row][10]))
         """
-        if int(board[row][10]) == 0:
-            return True
-        else: return False
+        count = 0
+        for col in range(10): 
+            if self.board[row][col] == "□":
+                count += 1
+        if count == int(self.board[row][10]): return 1
+        if int(self.board[row][10]) == 0:
+            return 2
+        else: return 0
 
 
-    def check_cols(board, col: int) -> bool:
+    def check_cols(self, col: int) -> bool:
         """Verifica se o número de barcos numa coluna está correto."""
-        if int(board[10][col]) == 0:
-            return True
-        else: return False
+        count = 0
+        for row in range(10):
+            if self.board[row][col] == "□":
+                count += 1
+        if count == int(self.board[10][col]): return 1
+        if int(self.board[10][col]) == 0:
+            return 2
+        else: return 0
 
-    def fill_rows(board, row: int):
-        """Preenche a linha com água."""
-        for col in range(0, 10, 1):
-            if board[row][col] == "□":
-                board[row][col] = "."
-        return board
+    def fill_rows(self, row: int, mode: int):
+        if mode == 1:
+            """Preenche a linha com barcos."""
+            for col in range(0, 10, 1):
+                if self.board[row][col] == "□":
+                    self.board[row][col] = "?"
+        elif mode == 2:
+            """Preenche a linha com água."""
+            for col in range(0, 10, 1):
+                if self.board[row][col] == "□":
+                    self.board[row][col] = "."
+        
 
 
-    def fill_cols(board, col: int):
-        """Preenche a coluna com água."""
-        for row in range(0, 10, 1):
-            if board[row][col] == "□":
-                board[row][col] = "."
-        return board
+    def fill_cols(self, col: int, mode: int):
+        """Preenche a coluna com barcos."""
+        if mode == 1:
+            for row in range(0, 10, 1):
+                if self.board[row][col] == "□":
+                    self.board[row][col] = "?"
+        elif mode == 2:
+            """Preenche a coluna com água."""
+            for row in range(0, 10, 1):
+                if self.board[row][col] == "□":
+                    self.board[row][col] = "."     
+        
     
 
-    @staticmethod
-    def actions_initial():
+    def actions_initial(self):
         """ Completa as primeiras ações possiveis """
-        board = Board.parse_instance()
         for row in range(0, 10, 1):
             for col in range(0, 10, 1):
                 
                 """ T """
-                if board[row][col] == "T":
-                    board[row + 1][col] = "m"
+                if self.board[row][col] == "T":
+                    self.board[row + 1][col] = "m"
                     if row == 0:
                         if 0 < col:
-                            board[row][col -1] = "."
-                            board[row +1][col -1] = "."
-                            board[row +2][col -1] = "."
+                            self.board[row][col -1] = "."
+                            self.board[row +1][col -1] = "."
+                            self.board[row +2][col -1] = "."
                             
                         if col < 9:
-                            board[row][col +1] = "."
-                            board[row +1][col +1] = "."
-                            board[row +2][col +1] = "."
+                            self.board[row][col +1] = "."
+                            self.board[row +1][col +1] = "."
+                            self.board[row +2][col +1] = "."
 
                     if 0 < row < 9:
-                        board[row -1][col] = "."
+                        self.board[row -1][col] = "."
                         if 0 < col:
-                            board[row -1][col -1] = "."
-                            board[row][col -1] = "."
-                            board[row +1][col -1] = "."
-                            if row != 8: board[row +2][col -1] = "."
+                            self.board[row -1][col -1] = "."
+                            self.board[row][col -1] = "."
+                            self.board[row +1][col -1] = "."
+                            if row != 8: self.board[row +2][col -1] = "."
                             
                         if col < 9:
-                            board[row -1][col +1] = "."
-                            board[row][col +1] = "."
-                            board[row +1][col +1] = "."
-                            if row != 8: board[row +2][col +1] = "."
+                            self.board[row -1][col +1] = "."
+                            self.board[row][col +1] = "."
+                            self.board[row +1][col +1] = "."
+                            if row != 8: self.board[row +2][col +1] = "."
                   
                 """ B """
-                if board[row][col] == "B":
-                    board[row - 1][col] = "m"
+                if self.board[row][col] == "B":
+                    self.board[row - 1][col] = "m"
                     if row == 9:
                         if 0 < col:
-                            board[row][col +1] = "."
-                            board[row -1][col +1] = "."
-                            board[row -2][col +1] = "."
+                            self.board[row][col +1] = "."
+                            self.board[row -1][col +1] = "."
+                            self.board[row -2][col +1] = "."
                             
                         if col < 9:
-                            board[row][col -1] = "."
-                            board[row -1][col -1] = "."
-                            board[row -2][col -1] = "."
+                            self.board[row][col -1] = "."
+                            self.board[row -1][col -1] = "."
+                            self.board[row -2][col -1] = "."
 
                     if 0 < row < 9:
-                        board[row +1][col] = "."
+                        self.board[row +1][col] = "."
                         if 0 < col:
-                            if row != 1: board[row -2][col -1] = "."
-                            board[row -1][col -1] = "."
-                            board[row][col -1] = "."
-                            board[row +1][col -1] = "."
+                            if row != 1: self.board[row -2][col -1] = "."
+                            self.board[row -1][col -1] = "."
+                            self.board[row][col -1] = "."
+                            self.board[row +1][col -1] = "."
                             
                         if col < 9:
-                            if row != 1: board[row -2][col +1] = "."
-                            board[row -1][col +1] = "."
-                            board[row][col +1] = "."
-                            board[row +1][col +1] = "."
+                            if row != 1: self.board[row -2][col +1] = "."
+                            self.board[row -1][col +1] = "."
+                            self.board[row][col +1] = "."
+                            self.board[row +1][col +1] = "."
 
                 """ L """
-                if board[row][col] == "L":
-                    board[row][col +1] = "m"
+                if self.board[row][col] == "L":
+                    self.board[row][col +1] = "m"
                     if col == 0:
                         if 0 < row:
-                            board[row -1][col -1] = "."
-                            board[row -1][col] = "."
-                            board[row -1][col +1] = "."
-                            board[row -1][col +2] = "."
+                            self.board[row -1][col -1] = "."
+                            self.board[row -1][col] = "."
+                            self.board[row -1][col +1] = "."
+                            self.board[row -1][col +2] = "."
 
                         if row < 9:
-                            board[row +1][col -1] = "."
-                            board[row +1][col] = "."
-                            board[row +1][col +1] = "."
-                            board[row +1][col +2] = "."
+                            self.board[row +1][col -1] = "."
+                            self.board[row +1][col] = "."
+                            self.board[row +1][col +1] = "."
+                            self.board[row +1][col +2] = "."
 
                     if 0 < col < 9:
-                        board[row][col -1] = "."
+                        self.board[row][col -1] = "."
                         if 0 < row:
-                            board[row -1][col -1] = "."
-                            board[row -1][col] = "."
-                            board[row -1][col +1] = "."
-                            if col != 8: board[row -1][col +2] = "."
+                            self.board[row -1][col -1] = "."
+                            self.board[row -1][col] = "."
+                            self.board[row -1][col +1] = "."
+                            if col != 8: self.board[row -1][col +2] = "."
                             
                         if row < 9:
-                            board[row +1][col -1] = "."
-                            board[row +1][col] = "."
-                            board[row +1][col +1] = "."
-                            if col != 8: board[row +1][col +2] = "."
+                            self.board[row +1][col -1] = "."
+                            self.board[row +1][col] = "."
+                            self.board[row +1][col +1] = "."
+                            if col != 8: self.board[row +1][col +2] = "."
 
                 """ R """
-                if board[row][col] == "R":
-                    board[row][col -1] = "m"
+                if self.board[row][col] == "R":
+                    self.board[row][col -1] = "m"
                     if col == 9:
                         if 0 < row:
-                            board[row -1][col -2] = "."
-                            board[row -1][col -1] = "."
-                            board[row -1][col] = "."
-                            board[row -1][col +1] = "."
+                            self.board[row -1][col -2] = "."
+                            self.board[row -1][col -1] = "."
+                            self.board[row -1][col] = "."
+                            self.board[row -1][col +1] = "."
 
                         if row < 9:             
-                            board[row +1][col -2] = "."
-                            board[row +1][col -1] = "."
-                            board[row +1][col] = "."
-                            board[row +1][col +1] = "."
+                            self.board[row +1][col -2] = "."
+                            self.board[row +1][col -1] = "."
+                            self.board[row +1][col] = "."
+                            self.board[row +1][col +1] = "."
 
                     if 0 < col < 9:
-                        board[row][col +1] = "."
+                        self.board[row][col +1] = "."
                         if 0 < row:
-                            if col != 1: board[row -1][col -2] = "."
-                            board[row -1][col -1] = "."
-                            board[row -1][col] = "."
-                            board[row -1][col +1] = "."
+                            if col != 1: self.board[row -1][col -2] = "."
+                            self.board[row -1][col -1] = "."
+                            self.board[row -1][col] = "."
+                            self.board[row -1][col +1] = "."
                             
                         if row < 9:
-                            if col != 1: board[row +1][col -2] = "."
-                            board[row +1][col -1] = "."
-                            board[row +1][col] = "."
-                            board[row +1][col +1] = "."
+                            if col != 1: self.board[row +1][col -2] = "."
+                            self.board[row +1][col -1] = "."
+                            self.board[row +1][col] = "."
+                            self.board[row +1][col +1] = "."
 
                 """ M """
-                if board[row][col] == "M":
+                if self.board[row][col] == "M":
                     if col != 0:
-                        board[row - 1][col -1] = "."
-                        board[row - 1][col +1] = "."
+                        self.board[row - 1][col -1] = "."
+                        self.board[row - 1][col +1] = "."
                     if col != 9:
-                        board[row + 1][col -1] = "."
-                        board[row + 1][col +1] = "."
+                        self.board[row + 1][col -1] = "."
+                        self.board[row + 1][col +1] = "."
                     
 
                 """ C """
-                if board[row][col] == "C":
-                    board[row][col -1] = "."
-                    board[row][col +1] = "."
+                if self.board[row][col] == "C":
+                    self.board[row][col -1] = "."
+                    self.board[row][col +1] = "."
                     if row != 0:
-                        board[row - 1][col - 1] = "."
-                        board[row - 1][col] = "."
-                        board[row - 1][col + 1] = "."
+                        self.board[row - 1][col - 1] = "."
+                        self.board[row - 1][col] = "."
+                        self.board[row - 1][col + 1] = "."
                     if row != 9:
-                        board[row +1][col -1] = "."
-                        board[row +1][col] = "."
-                        board[row +1][col +1] = "." 
+                        self.board[row +1][col -1] = "."
+                        self.board[row +1][col] = "."
+                        self.board[row +1][col +1] = "." 
 
-        for row in range(9):
-            if Board.check_rows(board, row):
-                board = Board.fill_rows(board, row)     
-        for col in range(9):
-            if Board.check_cols(board, col):
-                board = Board.fill_cols(board, col)
-        return board
+        for row in range(10):
+            mode = self.check_rows(row)
+            if mode != 0:
+                self.fill_rows(row, mode)     
+        for col in range(10):
+            mode = self.check_cols(col)
+            if mode != 0:
+                self.fill_cols(col, mode)
+        
+
+
+        
 
     @staticmethod
     def parse_instance():
@@ -265,19 +294,19 @@ class Board:
             > from sys import stdin
             > line = stdin.readline().split()
         """
-        board = [["□"] * 11 for _ in range(11)]
+        board = Board()
         line = sys.stdin.readline().split()
         while line != []:
             if line[0] == "ROW":
                 for i in range (10):
-                    board[i][10] = line[i+1]
-                board[i+1][10] = int(line[i+1])
+                    board.board[i][10] = line[i+1]
+                board.board[i+1][10] = int(line[i+1])
             elif line[0] == "COLUMN":
                 for i in range (10):
-                    board[10][i] = line[i+1]
-                board[10][i+1] = int(line[i+1])
+                    board.board[10][i] = line[i+1]
+                board.board[10][i+1] = int(line[i+1])
             elif line[0] == "HINT":
-                board[int(line[1])][int(line[2])] = line[3]
+                board.board[int(line[1])][int(line[2])] = line[3]
             line = sys.stdin.readline().split()
         return board
 
@@ -322,15 +351,14 @@ class Bimaru(Problem):
 
 
 if __name__ == "__main__":
-    board = Board.actions_initial()
-    """ state = Bimaru(board)
-    actions = state.actions()
-    """
+    board: Board = Board.parse_instance()
+    board.actions_initial()
+
 
 
     for row in range(0, 11, 1):
         for col in range(0, 11, 1):
-            print(board[row][col], end=" ")
+            print(board.board[row][col], end=" ")
         print()
 
 
