@@ -246,11 +246,13 @@ class Board:
         line = sys.stdin.readline().split()
         while line != []:
             if line[0] == "ROW":
-                for i in range(0, 10, 1):
+                for i in range(0, 9, 1):
                     board[i][10] = line[i+1]
+                board[i+1][10] = int(line[i+1])
             elif line[0] == "COLUMN":
-                for i in range(0, 10, 1):
+                for i in range(0, 9, 1):
                     board[10][i] = line[i+1]
+                board[10][i+1] = int(line[i+1])
             elif line[0] == "HINT":
                 board[int(line[1])][int(line[2])] = line[3]
             line = sys.stdin.readline().split()
