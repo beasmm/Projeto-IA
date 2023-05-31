@@ -69,25 +69,41 @@ class Board:
             return self.board[row][col - 1], self.board[row][col + 1]
 
     
+    def check_rows(board, row: int) -> bool:
+        """Verifica se o número de barcos numa linha está correto."""
+        """ print(type(board[row][10]))
+        """
+        if int(board[row][10]) == 0:
+            return True
+        else: return False
+
+
+    def check_cols(board, col: int) -> bool:
+        """Verifica se o número de barcos numa coluna está correto."""
+        if int(board[10][col]) == 0:
+            return True
+        else: return False
+
+    def fill_rows(board, row: int):
+        """Preenche a linha com água."""
+        for col in range(0, 10, 1):
+            if board[row][col] == "□":
+                board[row][col] = "."
+        return board
+
+
+    def fill_cols(board, col: int):
+        """Preenche a coluna com água."""
+        for row in range(0, 10, 1):
+            if board[row][col] == "□":
+                board[row][col] = "."
+        return board
+    
+
     @staticmethod
     def actions_initial():
         """ Completa as primeiras ações possiveis """
         board = Board.parse_instance()
-        
-        for row in range(0, 10, 1):
-            """ Preenche linha inteira de água """
-            if board[row][10] == "0":
-                for col in range(0, 10, 1):
-                    if board[row][col] == "□":
-                        board[row][col] = "."
-
-        for col in range(0, 10, 1):
-            """ Preenche coluna inteira de água """
-            if board[10][col] == "0":
-                for row in range(0, 10, 1):
-                    if board[row][col] == "□":
-                        board[row][col] = "."
-        
         for row in range(0, 10, 1):
             for col in range(0, 10, 1):
                 
@@ -228,7 +244,14 @@ class Board:
                     if row != 9:
                         board[row +1][col -1] = "."
                         board[row +1][col] = "."
-                        board[row +1][col +1] = "."              
+                        board[row +1][col +1] = "." 
+
+        for row in range(9):
+            if Board.check_rows(board, row):
+                board = Board.fill_rows(board, row)     
+        for col in range(9):
+            if Board.check_cols(board, col):
+                board = Board.fill_cols(board, col)
         return board
 
     @staticmethod
@@ -246,11 +269,11 @@ class Board:
         line = sys.stdin.readline().split()
         while line != []:
             if line[0] == "ROW":
-                for i in range(0, 9, 1):
+                for i in range (10):
                     board[i][10] = line[i+1]
                 board[i+1][10] = int(line[i+1])
             elif line[0] == "COLUMN":
-                for i in range(0, 9, 1):
+                for i in range (10):
                     board[10][i] = line[i+1]
                 board[10][i+1] = int(line[i+1])
             elif line[0] == "HINT":
