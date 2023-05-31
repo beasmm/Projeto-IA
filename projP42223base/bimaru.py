@@ -75,15 +75,16 @@ class Board:
     
     def check_rows(self, row: int):
         """Verifica se o número de barcos numa linha está correto."""
-        """ print(type(board[row][10]))
-        """
         count = 0
         for col in range(10): 
             if self.board[row][col] == "□":
                 count += 1
-        if count == int(self.board[row][10]): return 1
-        if int(self.board[row][10]) == 0:
-            return 2
+        if count != 0:
+            if count == int(self.board[row][10]):
+                return 1 
+            if (int(self.board[row][10]) == 0):
+                return 2
+            else: return 0
         else: return 0
 
 
@@ -93,9 +94,12 @@ class Board:
         for row in range(10):
             if self.board[row][col] == "□":
                 count += 1
-        if count == int(self.board[10][col]): return 1
-        if int(self.board[10][col]) == 0:
-            return 2
+        if count != 0:
+            if count == int(self.board[10][col]):
+                return 1 
+            if int(self.board[10][col]) == 0:
+                return 2
+            else: return 0
         else: return 0
 
     def fill_rows(self, row: int, mode: int):
@@ -104,6 +108,7 @@ class Board:
             for col in range(0, 10, 1):
                 if self.board[row][col] == "□":
                     self.board[row][col] = "?"
+                    self.change_cases_filled(row, col)
         elif mode == 2:
             """Preenche a linha com água."""
             for col in range(0, 10, 1):
@@ -115,12 +120,13 @@ class Board:
     def fill_cols(self, col: int, mode: int):
         """Preenche a coluna com barcos."""
         if mode == 1:
-            for row in range(0, 10, 1):
+            for row in range(10):
                 if self.board[row][col] == "□":
                     self.board[row][col] = "?"
+                    self.change_cases_filled(row, col)
         elif mode == 2:
             """Preenche a coluna com água."""
-            for row in range(0, 10, 1):
+            for row in range(10):
                 if self.board[row][col] == "□":
                     self.board[row][col] = "."     
         
@@ -133,11 +139,13 @@ class Board:
 
     def actions_initial(self):
         """ Completa as primeiras ações possiveis """
-        for row in range(0, 10, 1):
-            for col in range(0, 10, 1):
+
+        for row in range(10):
+            for col in range(10):
+                value = self.get_value(row, col)
                 
                 """ T """
-                if self.board[row][col] == "T":
+                if value == "T":
                     self.change_cases_filled(row, col)
                     self.board[row + 1][col] = "m"
                     self.change_cases_filled(row + 1, col)
@@ -167,7 +175,7 @@ class Board:
                             if row != 8: self.board[row +2][col +1] = "."
                   
                 """ B """
-                if self.board[row][col] == "B":
+                if value == "B":
                     self.change_cases_filled(row, col)
                     self.board[row - 1][col] = "m"
                     self.change_cases_filled(row - 1, col)
@@ -197,7 +205,7 @@ class Board:
                             self.board[row +1][col +1] = "."
 
                 """ L """
-                if self.board[row][col] == "L":
+                if value == "L":
                     self.change_cases_filled(row, col)
                     self.board[row][col +1] = "m"
                     self.change_cases_filled(row, col + 1)
@@ -229,7 +237,7 @@ class Board:
                             if col != 8: self.board[row +1][col +2] = "."
 
                 """ R """
-                if self.board[row][col] == "R":
+                if value == "R":
                     self.change_cases_filled(row, col)
                     self.board[row][col -1] = "m"
                     self.change_cases_filled(row, col - 1)
@@ -261,7 +269,7 @@ class Board:
                             self.board[row +1][col +1] = "."
 
                 """ M """
-                if self.board[row][col] == "M":
+                if value == "M":
                     self.change_cases_filled(row, col)
                     if col != 0:
                         self.board[row - 1][col -1] = "."
@@ -272,7 +280,7 @@ class Board:
                     
 
                 """ C """
-                if self.board[row][col] == "C":
+                if value == "C":
                     self.change_cases_filled(row, col)
                     self.board[row][col -1] = "."
                     self.board[row][col +1] = "."
@@ -285,15 +293,20 @@ class Board:
                         self.board[row +1][col] = "."
                         self.board[row +1][col +1] = "." 
 
-        for row in range(10):
-            mode = self.check_rows(row)
-            if mode != 0:
-                self.fill_rows(row, mode)     
-        for col in range(10):
-            mode = self.check_cols(col)
-            if mode != 0:
-                self.fill_cols(col, mode)
-        
+        count = 0
+        while count == 0:
+            count = 1
+            for row in range(10):
+                mode = self.check_rows(row)
+                if mode != 0:
+                    count = 0
+                    self.fill_rows(row, mode)
+            for col in range(10):
+                mode = self.check_cols(col)
+                if mode != 0:
+                    count = 0
+                    self.fill_cols(col, mode)     
+            
 
 
         
