@@ -39,6 +39,7 @@ class Board:
 
     def __init__(self):
         self.board = [["□"] * 11 for _ in range(11)]
+        self.fleet = [4, 3, 3, 2, 2, 2, 1, 1, 1, 1]
 
 
     def get_value(self, row: int, col: int) -> str:
@@ -135,6 +136,11 @@ class Board:
         """Diminui o número de posições que aind apodem ser preenchidas """
         self.board[row][10] = str(int(self.board[row][10]) - 1)
         self.board[10][col] = str(int(self.board[10][col]) - 1)
+    
+    def remove_from_fleet(self, size: int):
+        for i in range(len(self.fleet)):
+            if (self.fleet[i] == size):
+                self.fleet.pop(i)
 
     
     def make_stuff_happen(self):
@@ -163,7 +169,7 @@ class Board:
                 """ T """
                 if value == "T":
                     self.change_cases_filled(row, col)
-                    self.board[row + 1][col] = "m"
+                    self.board[row + 1][col] = "?"
                     self.change_cases_filled(row + 1, col)
                     if row == 0:
                         if 0 < col:
@@ -193,7 +199,7 @@ class Board:
                 """ B """
                 if value == "B":
                     self.change_cases_filled(row, col)
-                    self.board[row - 1][col] = "m"
+                    self.board[row - 1][col] = "?"
                     self.change_cases_filled(row - 1, col)
                     if row == 9:
                         if 0 < col:
@@ -223,7 +229,7 @@ class Board:
                 """ L """
                 if value == "L":
                     self.change_cases_filled(row, col)
-                    self.board[row][col +1] = "m"
+                    self.board[row][col +1] = "?"
                     self.change_cases_filled(row, col + 1)
                     if col == 0:
                         if 0 < row:
@@ -255,7 +261,7 @@ class Board:
                 """ R """
                 if value == "R":
                     self.change_cases_filled(row, col)
-                    self.board[row][col -1] = "m"
+                    self.board[row][col -1] = "?"
                     self.change_cases_filled(row, col - 1)
                     if col == 9:
                         if 0 < row:
@@ -297,6 +303,7 @@ class Board:
 
                 """ C """
                 if value == "C":
+                    self.remove_from_fleet(1)
                     self.change_cases_filled(row, col)
                     self.board[row][col -1] = "."
                     self.board[row][col +1] = "."
