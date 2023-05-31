@@ -51,9 +51,9 @@ class Board:
     def adjacent_vertical_values(self, row: int, col: int) -> (str, str):
         """Devolve os valores imediatamente acima e abaixo,
         respectivamente."""
-        if self.row == 0 or self.board[row - 1][col] == "":
+        if row == 0 or self.board[row - 1][col] == "":
             return None, self.board[row + 1][col]
-        elif self.row == 9 or self.board[row + 1][col] == "":
+        elif row == 9 or self.board[row + 1][col] == "":
             return self.board[row - 1][col], None
         elif self.board[row + 1][col] == "" and self.board[row - 1][col] == "":
             return None, None
@@ -63,9 +63,9 @@ class Board:
     def adjacent_horizontal_values(self, row: int, col: int) -> (str, str):
         """Devolve os valores imediatamente à esquerda e à direita,
         respectivamente."""
-        if self.col == 0 or self.board[row][col - 1] == "":
+        if col == 0 or self.board[row][col - 1] == "":
             return None, self.board[row + 1][col]
-        elif self.col == 9 or self.board[row][col + 1] == "":
+        elif col == 9 or self.board[row][col + 1] == "":
             return self.board[row][col - 1], None
         elif self.board[row][col - 1] == "" and self.board[row][col + 1] == "":
             return None, None
@@ -87,7 +87,7 @@ class Board:
         else: return 0
 
 
-    def check_cols(self, col: int) -> bool:
+    def check_cols(self, col: int) -> int:
         """Verifica se o número de barcos numa coluna está correto."""
         count = 0
         for row in range(10):
@@ -125,6 +125,11 @@ class Board:
                     self.board[row][col] = "."     
         
     
+    def change_cases_filled(self, row: int, col: int):
+        """Diminui o número de posições que aind apodem ser preenchidas """
+        self.board[row][10] = str(int(self.board[row][10]) - 1)
+        self.board[10][col] = str(int(self.board[10][col]) - 1)
+
 
     def actions_initial(self):
         """ Completa as primeiras ações possiveis """
@@ -133,7 +138,9 @@ class Board:
                 
                 """ T """
                 if self.board[row][col] == "T":
+                    self.change_cases_filled(row, col)
                     self.board[row + 1][col] = "m"
+                    self.change_cases_filled(row + 1, col)
                     if row == 0:
                         if 0 < col:
                             self.board[row][col -1] = "."
@@ -161,7 +168,9 @@ class Board:
                   
                 """ B """
                 if self.board[row][col] == "B":
+                    self.change_cases_filled(row, col)
                     self.board[row - 1][col] = "m"
+                    self.change_cases_filled(row - 1, col)
                     if row == 9:
                         if 0 < col:
                             self.board[row][col +1] = "."
@@ -189,7 +198,9 @@ class Board:
 
                 """ L """
                 if self.board[row][col] == "L":
+                    self.change_cases_filled(row, col)
                     self.board[row][col +1] = "m"
+                    self.change_cases_filled(row, col + 1)
                     if col == 0:
                         if 0 < row:
                             self.board[row -1][col -1] = "."
@@ -219,7 +230,9 @@ class Board:
 
                 """ R """
                 if self.board[row][col] == "R":
+                    self.change_cases_filled(row, col)
                     self.board[row][col -1] = "m"
+                    self.change_cases_filled(row, col - 1)
                     if col == 9:
                         if 0 < row:
                             self.board[row -1][col -2] = "."
@@ -249,6 +262,7 @@ class Board:
 
                 """ M """
                 if self.board[row][col] == "M":
+                    self.change_cases_filled(row, col)
                     if col != 0:
                         self.board[row - 1][col -1] = "."
                         self.board[row - 1][col +1] = "."
@@ -259,6 +273,7 @@ class Board:
 
                 """ C """
                 if self.board[row][col] == "C":
+                    self.change_cases_filled(row, col)
                     self.board[row][col -1] = "."
                     self.board[row][col +1] = "."
                     if row != 0:
