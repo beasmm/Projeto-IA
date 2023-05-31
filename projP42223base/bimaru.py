@@ -142,6 +142,35 @@ class Board:
             if (self.fleet[i] == size):
                 self.fleet.pop(i)
 
+    def clearing_boats(self):
+        for row in range(10):
+            for col in range(10):
+                value = self.get_value(row, col)
+                if value == "?":
+                    """ c """
+                    if self.adjacent_horizontal_values(row,col) == (".", ".") and self.adjacent_vertical_values(row,col) == (".", "."):
+                        self.board[row][col] = "c"
+
+                    """ t """
+                    if row == 1 and self.adjacent_horizontal_values(row,col) == (".", "."):
+                        self.board[row][col] = "t"
+
+
+
+
+                if value == "M":
+                    if self.adjacent_horizontal_values(row, col) in [(".", ".") , (".", None), (None, ".")]:
+                        self.board[row-1][col] = "?"
+                        self.change_cases_filled(row - 1, col)
+                        self.board[row+1][col] = "?"
+                        self.change_cases_filled(row + 1, col)
+
+                    elif self.adjacent_vertical_values(row, col) in [(".", ".") , (".", None), (None, ".")]:
+                        self.board[row][col-1] = "?"
+                        self.change_cases_filled(row, col -1)
+                        self.board[row][col+1] = "?"
+                        self.change_cases_filled(row, col +1)   
+
     
     def make_stuff_happen(self):
         count = 0
