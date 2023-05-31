@@ -137,10 +137,10 @@ class Board:
         self.board[row][10] = str(int(self.board[row][10]) - 1)
         self.board[10][col] = str(int(self.board[10][col]) - 1)
     
-    def remove_from_fleet(self, size: int):
-        for i in range(len(self.fleet)):
+    """def remove_from_fleet(self, size: int):
+        for i in range(len(self.fleet) - 1):
             if (self.fleet[i] == size):
-                self.fleet.pop(i)
+                self.fleet.pop(i)"""
 
     def clearing_boats(self):
         for row in range(10):
@@ -332,7 +332,7 @@ class Board:
 
                 """ C """
                 if value == "C":
-                    self.remove_from_fleet(1)
+                    """self.remove_from_fleet(1)"""
                     self.change_cases_filled(row, col)
                     self.board[row][col -1] = "."
                     self.board[row][col +1] = "."
