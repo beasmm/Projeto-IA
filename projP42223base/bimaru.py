@@ -136,6 +136,22 @@ class Board:
         self.board[row][10] = str(int(self.board[row][10]) - 1)
         self.board[10][col] = str(int(self.board[10][col]) - 1)
 
+    
+    def make_stuff_happen(self):
+        count = 0
+        while count == 0:
+            count = 1
+            for row in range(10):
+                mode = self.check_rows(row)
+                if mode != 0:
+                    count = 0
+                    self.fill_rows(row, mode)
+            for col in range(10):
+                mode = self.check_cols(col)
+                if mode != 0:
+                    count = 0
+                    self.fill_cols(col, mode)     
+
 
     def actions_initial(self):
         """ Completa as primeiras ações possiveis """
@@ -292,20 +308,8 @@ class Board:
                         self.board[row +1][col -1] = "."
                         self.board[row +1][col] = "."
                         self.board[row +1][col +1] = "." 
-
-        count = 0
-        while count == 0:
-            count = 1
-            for row in range(10):
-                mode = self.check_rows(row)
-                if mode != 0:
-                    count = 0
-                    self.fill_rows(row, mode)
-            for col in range(10):
-                mode = self.check_cols(col)
-                if mode != 0:
-                    count = 0
-                    self.fill_cols(col, mode)     
+        
+        self.make_stuff_happen()
             
 
 
