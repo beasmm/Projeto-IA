@@ -42,35 +42,33 @@ class Board:
 
     def get_value(self, row: int, col: int) -> str:
         """Devolve o valor na respetiva posição do tabuleiro."""
-        if self.board[row][col] == "□":
-            return None
-        else:
-            return self.board[row][col]
+        return self.board[row][col]
 
     def adjacent_vertical_values(self, row: int, col: int) -> (str, str):
         """Devolve os valores imediatamente acima e abaixo,
         respectivamente."""
-        pos_a = self.board[row - 1][col]
-        pos_u = self.board[row + 1][col]
-        if pos_a == "□" or row == 0: pos_a = None
-        if pos_u == "□" or row == 9: pos_u = None
-        return pos_a, pos_u
-    
+        if row == 0: 
+            return None, self.get_value(row + 1, col)
+        if row == 9: 
+            return self.get_value(row - 1, col), None
+        return self.get_value(row - 1, col), self.get_value(row + 1, col)
 
     def adjacent_horizontal_values(self, row: int, col: int) -> (str, str):
         """Devolve os valores imediatamente à esquerda e à direita,
         respectivamente."""
-        pos_l = self.board[row][col - 1]
-        pos_r = self.board[row][col + 1]
-        if pos_l == "□" or col == 0: pos_l = None
-        if pos_r == "□" or col == 0: pos_r = None
-        return pos_l, pos_r
+        if col == 0: 
+            return None, self.get_value(row, col + 1)
+        if col == 9: 
+            return self.get_value(row, col - 1), None
+        return self.get_value(row, col - 1), self.get_value(row, col + 1)
         
     
     def check_rows(self, row: int):
         """Verifica se o número de barcos numa linha está correto."""
         count = 0
-        for col in range(10): 
+        for col in range(10):
+            if self.get_value(row, col + 1) == "M":
+                self.case_M(row, col + 1)
             if self.board[row][col] == "□":
                 count += 1
         if count != 0:
@@ -99,16 +97,19 @@ class Board:
     def fill_rows(self, row: int, mode: int):
         if mode == 1:
             """Preenche a linha com barcos."""
-            for col in range(0, 10, 1):
+            for col in range(10):
                 if self.board[row][col] == "□":
                     self.board[row][col] = "?"
                     self.change_cases_filled(row, col)
+                    self.clear_boats_row(row)
         elif mode == 2:
             """Preenche a linha com água."""
-            for col in range(0, 10, 1):
+            for col in range(10):
                 if self.board[row][col] == "□":
                     self.board[row][col] = "."
-        
+                elif self.get_value(row, col) == "?":
+                    self.clear_boats_row(row)
+
 
     def fill_cols(self, col: int, mode: int):
         """Preenche a coluna com barcos."""
@@ -117,11 +118,13 @@ class Board:
                 if self.board[row][col] == "□":
                     self.board[row][col] = "?"
                     self.change_cases_filled(row, col)
+                    self.clear_boats_col(col)
         elif mode == 2:
             """Preenche a coluna com água."""
             for row in range(10):
                 if self.board[row][col] == "□":
                     self.board[row][col] = "."     
+                    self.clear_boats_col(col)
         
     
     def change_cases_filled(self, row: int, col: int):
@@ -135,6 +138,73 @@ class Board:
                 self.fleet.pop(i)
                 return
 
+
+    def case_M(self, row: int, col: int):
+        if self.adjacent_horizontal_values(row, col)[0] in ["W", ".", None] or self.adjacent_horizontal_values(row, col)[1] in ["W", ".", None]:
+            if self.get_value(row - 1, col) == "□": 
+                self.board[row - 1][col] = "?"
+                self.change_cases_filled(row - 1, col)
+                self.put_water_m(row - 1, col)
+            
+            if self.get_value(row + 1, col) == "□": 
+                self.board[row + 1][col] = "?"
+                self.change_cases_filled(row + 1, col)
+                self.put_water_m(row + 1, col)
+
+        elif self.adjacent_vertical_values(row, col)[0] in ["W", ".", None] or self.adjacent_vertical_values(row, col)[1] in ["W", ".", None]:
+            if self.get_value(row, col + 1) == "□": 
+                self.board[row][col + 1] = "?"
+                self.change_cases_filled(row, col + 1)
+                self.put_water_m(row, col + 1)
+           
+            if self.get_value(row, col - 1) == "□": 
+                self.board[row][col - 1] = "?"
+                self.change_cases_filled(row, col - 1)
+                self.put_water_m(row, col - 1)
+
+    def clear_case(self, row: int, col: int):
+        if self.adjacent_vertical_values(row, col)[0] in [".", "W", None] and self.adjacent_vertical_values(row, col)[1] in [".", "W", None] and self.adjacent_horizontal_values(row, col)[0] in [".", "W", None] and self.adjacent_horizontal_values(row, col)[1] in [".", "W", None]:
+            self.board[row][col] = "c"
+            self.remove_from_fleet(1)
+            return
+        
+        elif self.adjacent_vertical_values(row, col)[0] in ["t", "T", "m", "M", "?"] and self.adjacent_vertical_values(row, col)[1] in [".", "W", None]:
+            self.board[row][col] = "b"
+            if self.adjacent_vertical_values(row, col)[0] in ["T", "t"]: 
+                self.remove_from_fleet(2)
+                return
+            elif self.adjacent_vertical_values(row, col)[0] in ["m", "M"]:
+                if self.adjacent_vertical_values(row - 1, col)[0] in ["T", "M"]:
+                    self.remove_from_fleet(3)
+                    return
+                else:
+                    self.remove_from_fleet(4)
+                    return
+                
+        elif self.adjacent_vertical_values(row, col)[0] in [".", "W", None] and self.adjacent_vertical_values(row, col)[1] in ["b", "B", "m", "M", "?"]:
+            self.board[row][col] = "t"
+        
+        elif self.adjacent_vertical_values(row, col)[0] in ["t", "T", "m", "M", "?"] and self.adjacent_vertical_values(row, col)[1] in ["b", "B", "M", "?", "m"]:
+            self.board[row][col] = "m"
+
+        return
+
+
+    def clear_boats_col(self, col: int):
+        for row in range(10):
+            if self.get_value(row, col) == "?":
+                self.clear_case(row, col)
+        return 
+
+
+    def clear_boats_row(self, row: int):
+        for col in range(10):
+            if self.get_value(row, col) == "?":
+                self.clear_case(row, col)
+        return
+    
+
+
     def clearing_boats(self):
         for row in range(10):
             for col in range(10):
@@ -147,9 +217,6 @@ class Board:
                     """ t """
                     if row == 1 and self.adjacent_horizontal_values(row,col) == (".", "."):
                         self.board[row][col] = "t"
-
-
-
 
                 if value == "M":
                     if self.adjacent_horizontal_values(row, col) in [(".", ".") , (".", None), (None, ".")]:
@@ -184,133 +251,124 @@ class Board:
         self.change_cases_filled(row, col)
         if row == 0:
             if 0 < col:
-                self.board[row][col -1] = "."
-                self.board[row +1][col -1] = "."
-                self.board[row +2][col -1] = "."
+                if self.get_value(row, col - 1) != "W": self.board[row][col - 1] = "."
+                if self.get_value(row + 1, col - 1) != "W": self.board[row + 1][col - 1] = "."
                 
             if col < 9:
-                self.board[row][col +1] = "."
-                self.board[row +1][col +1] = "."
-                self.board[row +2][col +1] = "."
+                if self.get_value(row, col + 1) != "W": self.board[row][col + 1] = "."
+                if self.get_value(row + 1, col + 1) != "W":self.board[row + 1][col + 1] = "."
 
         if 0 < row < 9:
-            self.board[row -1][col] = "."
+            if self.get_value(row - 1, col) != "W": self.board[row - 1][col] = "."
             if 0 < col:
-                self.board[row -1][col -1] = "."
-                self.board[row][col -1] = "."
-                self.board[row +1][col -1] = "."
-                if row != 8: self.board[row +2][col -1] = "."
+                if self.get_value(row, col - 1) != "W": self.board[row][col - 1] = "."
+                if self.get_value(row - 1, col - 1) != "W": self.board[row - 1][col - 1] = "."
+                if self.get_value(row + 1, col - 1) != "W": self.board[row + 1][col - 1] = "."
                 
             if col < 9:
-                self.board[row -1][col +1] = "."
-                self.board[row][col +1] = "."
-                self.board[row +1][col +1] = "."
-                if row != 8: self.board[row +2][col +1] = "."
+                if self.get_value(row, col + 1) != "W": self.board[row][col + 1] = "."
+                if self.get_value(row - 1, col + 1) != "W": self.board[row - 1][col + 1] = "."
+                if self.get_value(row + 1, col + 1) != "W": self.board[row + 1][col + 1] = "."
     
     def put_water_b(self, row, col):
         self.change_cases_filled(row, col)
         if row == 9:
             if 0 < col:
-                self.board[row][col +1] = "."
-                self.board[row -1][col +1] = "."
-                self.board[row -2][col +1] = "."
+                if self.get_value(row , col + 1) != "W": self.board[row][col + 1] = "."
+                if self.get_value(row - 1, col + 1) != "W":self.board[row - 1][col + 1] = "."
                 
             if col < 9:
-                self.board[row][col -1] = "."
-                self.board[row -1][col -1] = "."
-                self.board[row -2][col -1] = "."
+                if self.get_value(row, col - 1) != "W": self.board[row][col - 1] = "."
+                if self.get_value(row - 1, col - 1) != "W":self.board[row - 1][col - 1] = "."
 
         if 0 < row < 9:
-            self.board[row +1][col] = "."
+            if self.get_value(row + 1, col) != "W": self.board[row + 1][col] = "."
             if 0 < col:
-                if row != 1: self.board[row -2][col -1] = "."
-                self.board[row -1][col -1] = "."
-                self.board[row][col -1] = "."
-                self.board[row +1][col -1] = "."
+                if self.get_value(row, col - 1) != "W": self.board[row][col - 1] = "."
+                if self.get_value(row + 1, col - 1) != "W": self.board[row + 1][col - 1] = "."
+                if self.get_value(row - 1, col - 1) != "W": self.board[row - 1][col - 1] = "."
                 
             if col < 9:
-                if row != 1: self.board[row -2][col +1] = "."
-                self.board[row -1][col +1] = "."
-                self.board[row][col +1] = "."
-                self.board[row +1][col +1] = "."
+                if self.get_value(row, col + 1) != "W": self.board[row][col + 1] = "."
+                if self.get_value(row + 1, col + 1) != "W": self.board[row + 1][col + 1] = "."
+                if self.get_value(row - 1, col + 1) != "W": self.board[row - 1][col + 1] = "."
 
     def put_water_l(self, row, col):
         self.change_cases_filled(row, col)
         if col == 0:
             if 0 < row:
-                self.board[row -1][col -1] = "."
-                self.board[row -1][col] = "."
-                self.board[row -1][col +1] = "."
-                self.board[row -1][col +2] = "."
+                if self.get_value(row - 1, col) != "W": self.board[row - 1][col] = "."
+                if self.get_value(row - 1, col + 1) != "W": self.board[row - 1][col + 1] = "."
 
             if row < 9:
-                self.board[row +1][col -1] = "."
-                self.board[row +1][col] = "."
-                self.board[row +1][col +1] = "."
-                self.board[row +1][col +2] = "."
+                if self.get_value(row + 1, col) != "W": self.board[row + 1][col] = "."
+                if self.get_value(row + 1, col - 1) != "W": self.board[row + 1][col + 1] = "."
 
         if 0 < col < 9:
-            self.board[row][col -1] = "."
+            if self.get_value(row, col - 1) != "W": self.board[row][col - 1] = "."
             if 0 < row:
-                self.board[row -1][col -1] = "."
-                self.board[row -1][col] = "."
-                self.board[row -1][col +1] = "."
-                if col != 8: self.board[row -1][col +2] = "."
+                if self.get_value(row - 1, col) != "W": self.board[row - 1][col] = "."
+                if self.get_value(row - 1, col - 1) != "W": self.board[row - 1][col - 1] = "."
+                if self.get_value(row - 1, col + 1) != "W": self.board[row - 1][col + 1] = "."
                 
             if row < 9:
-                self.board[row +1][col -1] = "."
-                self.board[row +1][col] = "."
-                self.board[row +1][col +1] = "."
-                if col != 8: self.board[row +1][col +2] = "."
+                if self.get_value(row + 1, col) != "W": self.board[row + 1][col] = "."
+                if self.get_value(row + 1, col - 1) != "W": self.board[row + 1][col - 1] = "."
+                if self.get_value(row + 1, col + 1) != "W": self.board[row + 1][col + 1] = "."
 
     def put_water_r(self, row, col):
         self.change_cases_filled(row, col)
         if col == 9:
             if 0 < row:
-                self.board[row -1][col -2] = "."
-                self.board[row -1][col -1] = "."
-                self.board[row -1][col] = "."
-                self.board[row -1][col +1] = "."
+                if self.get_value(row + 1, col) != "W": self.board[row + 1][col] = "."
+                if self.get_value(row + 1, col - 1) != "W": self.board[row + 1][col - 1] = "."
 
             if row < 9:             
-                self.board[row +1][col -2] = "."
-                self.board[row +1][col -1] = "."
-                self.board[row +1][col] = "."
-                self.board[row +1][col +1] = "."
+                if self.get_value(row - 1, col) != "W": self.board[row - 1][col] = "."
+                if self.get_value(row - 1, col - 1) != "W": self.board[row - 1][col - 1] = "."
 
         if 0 < col < 9:
-            self.board[row][col +1] = "."
+            if self.get_value(row, col + 1) != "W": self.board[row][col + 1] = "."
             if 0 < row:
-                if col != 1: self.board[row -1][col -2] = "."
-                self.board[row -1][col -1] = "."
-                self.board[row -1][col] = "."
-                self.board[row -1][col +1] = "."
+                if self.get_value(row - 1, col) != "W": self.board[row - 1][col] = "."
+                if self.get_value(row - 1, col - 1) != "W": self.board[row - 1][col - 1] = "."
+                if self.get_value(row - 1, col + 1) != "W": self.board[row - 1][col + 1] = "."
                 
             if row < 9:
-                if col != 1: self.board[row +1][col -2] = "."
-                self.board[row +1][col -1] = "."
-                self.board[row +1][col] = "."
-                self.board[row +1][col +1] = "."
+                if self.get_value(row + 1, col) != "W": self.board[row + 1][col] = "."
+                if self.get_value(row + 1, col - 1) != "W": self.board[row + 1][col - 1] = "."
+                if self.get_value(row + 1, col + 1) != "W":self.board[row + 1][col + 1] = "."
 
     def put_water_m(self, row, col):
-        if col != 0:
-            self.board[row - 1][col -1] = "."
-            self.board[row - 1][col +1] = "."
-        if col != 9:
-            self.board[row + 1][col -1] = "."
-            self.board[row + 1][col +1] = "."
+        if row != 0:
+            if col != 0:
+                if self.get_value(row - 1, col - 1) != "W": self.board[row - 1][col - 1] = "."
+            if col != 9:
+                if self.get_value(row - 1, col + 1) != "W": self.board[row - 1][col + 1] = "."
+        if row != 9:
+            if col != 0:
+                if self.get_value(row + 1, col - 1) != "W": self.board[row + 1][col - 1] = "."
+            if col != 9:
+                if self.get_value(row + 1, col + 1) != "W": self.board[row + 1][col + 1] = "."
+
     
     def put_water_c(self, row, col):
-        self.board[row][col -1] = "."
-        self.board[row][col +1] = "."
+        if col != 0:
+            if self.get_value(row, col - 1) != "W": self.board[row][col - 1] = "."
+        if col != 9:
+            if self.get_value(row, col + 1) != "W": self.board[row][col + 1] = "."
         if row != 0:
-            self.board[row - 1][col - 1] = "."
-            self.board[row - 1][col] = "."
-            self.board[row - 1][col + 1] = "."
+            if self.get_value(row - 1, col) != "W": self.board[row - 1][col] = "."
+            if col != 0:
+                if self.get_value(row - 1, col - 1) != "W": self.board[row - 1][col - 1] = "."
+            if col != 9:
+                if self.get_value(row - 1, col + 1) != "W":self.board[row - 1][col + 1] = "."
         if row != 9:
-            self.board[row +1][col -1] = "."
-            self.board[row +1][col] = "."
-            self.board[row +1][col +1] = "." 
+            if self.get_value(row + 1, col) != "W": self.board[row + 1][col] = "."
+            if col != 0:
+                if self.get_value(row + 1, col - 1) != "W": self.board[row + 1][col - 1] = "."
+            if col != 9:
+                if self.get_value(row + 1, col + 1) != "W": self.board[row + 1][col + 1] = "." 
 
 
     def actions_initial(self):
@@ -325,18 +383,21 @@ class Board:
                     self.board[row + 1][col] = "?"
                     self.change_cases_filled(row + 1, col)         
                     self.put_water_t(row, col)
+                    self.put_water_m(row + 1, col)
 
                 """ B """
                 if value == "B":
                     self.board[row - 1][col] = "?"
                     self.change_cases_filled(row - 1, col)
                     self.put_water_b(row, col)
+                    self.put_water_m(row - 1, col)
 
                 """ L """
                 if value == "L":
                     self.board[row][col +1] = "?"
                     self.change_cases_filled(row, col + 1)
                     self.put_water_l(row, col)
+                    self.put_water_m(row, col + 1)
 
 
                 """ R """
@@ -344,6 +405,7 @@ class Board:
                     self.board[row][col -1] = "?"
                     self.change_cases_filled(row, col - 1)
                     self.put_water_r(row, col)
+                    self.put_water_m(row, col - 1)
 
 
                 """ M """
@@ -359,7 +421,6 @@ class Board:
                     self.put_water_c(row, col)
         
         self.make_stuff_happen()
-            
 
 
         
@@ -615,7 +676,7 @@ if __name__ == "__main__":
     problem  = Bimaru(board)
     s0 = BimaruState(board)
 
-    print(problem.actions(s0))
+    #print(problem.actions(s0))
     
 
 
