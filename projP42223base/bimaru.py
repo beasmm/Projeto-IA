@@ -67,6 +67,8 @@ class Board:
         """Verifica se o número de barcos numa linha está correto."""
         count = 0
         for col in range(10):
+            if self.get_value(row, col) == "?":
+                self.clear_boats_row(row)
             if self.get_value(row, col + 1) == "M":
                 self.case_M(row, col + 1)
             if self.board[row][col] == "□":
@@ -84,6 +86,8 @@ class Board:
         """Verifica se o número de barcos numa coluna está correto."""
         count = 0
         for row in range(10):
+            if self.get_value(row, col) == "?":
+                self.clear_boats_col(col)
             if self.board[row][col] == "□":
                 count += 1
         if count != 0:
@@ -124,6 +128,7 @@ class Board:
             for row in range(10):
                 if self.board[row][col] == "□":
                     self.board[row][col] = "."     
+                elif self.get_value(row, col) == "?":
                     self.clear_boats_col(col)
         
     
@@ -247,6 +252,7 @@ class Board:
                     count = 0
                     self.fill_cols(col, mode)    
 
+
     def put_water_t(self, row, col):
         self.change_cases_filled(row, col)
         if row == 0:
@@ -350,8 +356,7 @@ class Board:
                 if self.get_value(row + 1, col - 1) != "W": self.board[row + 1][col - 1] = "."
             if col != 9:
                 if self.get_value(row + 1, col + 1) != "W": self.board[row + 1][col + 1] = "."
-
-    
+ 
     def put_water_c(self, row, col):
         if col != 0:
             if self.get_value(row, col - 1) != "W": self.board[row][col - 1] = "."
