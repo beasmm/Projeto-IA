@@ -480,6 +480,7 @@ class Bimaru(Problem):
     def __init__(self, board):
         """O construtor especifica o estado inicial."""
         self.initial = BimaruState(board)
+        self.called = 0
 
     def actions(self, state: BimaruState):
         """Retorna uma lista de ações que podem ser executadas a
@@ -596,6 +597,7 @@ class Bimaru(Problem):
                         actions.append([(row, col), 1, "H"])
                     elif value == "?" and int(state.board.board[10][col]) >=1 and int(state.board.board[row][10]) >=1:
                         actions.append([(row, col), 1, "H"])
+        print(actions)
         return actions
 
 
@@ -606,108 +608,115 @@ class Bimaru(Problem):
         'state' passado como argumento. A ação a executar deve ser uma
         das presentes na lista obtida pela execução de
         self.actions(state)."""
-        pos = action[1]
-        size = action[2]
-        orient = action[3]
+        pos = action[0]
+        size = action[1]
+        orient = action[2]
+        value = state.board.get_value(pos[0], pos[1])
 
         if size == 4:
-            state.remove_from_fleet(4)
+            state.board.remove_from_fleet(4)
             if orient == "H":
                 for i in range(4):
-                    if i == 0 and state.board[pos[0]][pos[1]] == "□":
-                        state.board[pos[0]][pos[1]] = "l"
-                        state.board.change_cases_filled(pos[0], pos[1])
+                    mid_value = state.board.board[pos[0]][pos[1]+i]
+                    if i == 0 and value in ["□", "?"]:
+                        state.board.board[pos[0]][pos[1]] = "l"
+                        if value != "?":state.board.change_cases_filled(pos[0], pos[1])
                         state.board.put_water_l(pos[0], pos[1])
-                    elif i == 1 and state.board[pos[0]][pos[1]+i] == "□":
-                        state.board[pos[0]][pos[1]+i] = "m"
-                        state.board.change_cases_filled(pos[0], pos[1]+i)
+                    elif i == 1 and mid_value in ["□", "?"]:
+                        state.board.board[pos[0]][pos[1]+i] = "m"
+                        if mid_value != "?": state.board.change_cases_filled(pos[0], pos[1]+i)
                         state.board.put_water_m(pos[0], pos[1]+i)
-                    elif i == 2 and state.board[pos[0]][pos[1]+i] == "□":
-                        state.board[pos[0]][pos[1]+i] = "m"
-                        state.board.change_cases_filled(pos[0], pos[1]+i)
+                    elif i == 2 and mid_value in ["□", "?"]:
+                        state.board.board[pos[0]][pos[1]+i] = "m"
+                        if mid_value != "?": state.board.change_cases_filled(pos[0], pos[1]+i)
                         state.board.put_water_m(pos[0], pos[1]+i)
-                    elif i == 3 and state.board[pos[0]][pos[1]+i] == "□":
-                        state.board[pos[0]][pos[1]+i] = "r"
-                        state.board.change_cases_filled(pos[0], pos[1]+i)
+                    elif i == 3 and mid_value in ["□", "?"]:
+                        state.board.board[pos[0]][pos[1]+i] = "r"
+                        if mid_value != "?": state.board.change_cases_filled(pos[0], pos[1]+i)
                         state.board.put_water_r(pos[0], pos[1]+i)
                     
 
             else:
                 for i in range(4):
-                    if i == 0 and state.board[pos[0]][pos[1]] == "□":
-                        state.board[pos[0]][pos[1]] = "t"
+                    mid_value = state.board.board[pos[0]+i][pos[1]]
+                    if i == 0 and value in ["□", "?"]:
+                        state.board.board[pos[0]][pos[1]] = "t"
                         state.board.change_cases_filled(pos[0], pos[1])
                         state.board.put_water_t(pos[0], pos[1])
-                    if i == 1 and state.board[pos[0]+i][pos[1]] == "□":
-                        state.board[pos[0]+i][pos[1]] = "m"
-                        state.board.change_cases_filled(pos[0]+i, pos[1])
+                    if i == 1 and state.board.board[pos[0]+i][pos[1]] in ["□", "?"]:
+                        state.board.board[pos[0]+i][pos[1]] = "m"
+                        if mid_value != "?": state.board.change_cases_filled(pos[0]+i, pos[1])
                         state.board.put_water_m(pos[0]+i, pos[1])
-                    if i == 2 and state.board[pos[0]+i][pos[1]] == "□":
-                        state.board[pos[0]+i][pos[1]] = "m"
-                        state.board.change_cases_filled(pos[0]+i, pos[1])
+                    if i == 2 and mid_value in ["□", "?"]:
+                        state.board.board[pos[0]+i][pos[1]] = "m"
+                        if mid_value != "?": state.board.change_cases_filled(pos[0]+i, pos[1])
                         state.board.put_water_m(pos[0]+i, pos[1])
-                    if i == 3 and state.board[pos[0]+i][pos[1]] == "□":
-                        state.board[pos[0]+i][pos[1]] = "b"
-                        state.board.change_cases_filled(pos[0]+i, pos[1])
+                    if i == 3 and mid_value in ["□", "?"]:
+                        state.board.board[pos[0]+i][pos[1]] = "b"
+                        if mid_value != "?": state.board.change_cases_filled(pos[0]+i, pos[1])
                         state.board.put_water_b(pos[0]+i, pos[1])
 
         elif size == 3:
             state.remove_from_fleet(3)
             if orient == "H":
                 for i in range(3):
-                    if i == 0 and state.board[pos[0]][pos[1]] == "□":
-                        state.board[pos[0]][pos[1]] = "l"
-                        state.board.change_cases_filled(pos[0], pos[1])
+                    mid_value = state.board.board[pos[0]][pos[1]+i]
+                    if i == 0 and value in ["□", "?"]:
+                        state.board.board[pos[0]][pos[1]] = "l"
+                        if value != "?": state.board.change_cases_filled(pos[0], pos[1])
                         state.board.put_water_l(pos[0], pos[1])
-                    elif i == 1 and state.board[pos[0]][pos[1]+i] == "□":
-                        state.board[pos[0]][pos[1]+i] = "m"
-                        state.board.change_cases_filled(pos[0], pos[1]+i)
+                    elif i == 1 and mid_value in ["□", "?"]:
+                        state.board.board[pos[0]][pos[1]+i] = "m"
+                        if mid_value != "?": state.board.change_cases_filled(pos[0], pos[1]+i)
                         state.board.put_water_m(pos[0], pos[1]+i)
-                    elif i == 2 and state.board[pos[0]][pos[1]+i] == "□":
-                        state.board[pos[0]][pos[1]+i] = "r"
-                        state.board.change_cases_filled(pos[0], pos[1]+i)
+                    elif i == 2 and mid_value in ["□", "?"]:
+                        state.board.board[pos[0]][pos[1]+i] = "r"
+                        if mid_value != "?": state.board.change_cases_filled(pos[0], pos[1]+i)
                         state.board.put_water_r(pos[0], pos[1]+i)
             else:
                 for i in range(3):
-                    if i == 0 and state.board[pos[0]][pos[1]] == "□":
-                        state.board[pos[0]][pos[1]] = "t"
-                        state.board.change_cases_filled(pos[0], pos[1])
+                    mid_value = state.board.board[pos[0]+i][pos[1]]
+                    if i == 0 and value in ["□", "?"]:
+                        state.board.board[pos[0]][pos[1]] = "t"
+                        if value != "?": state.board.change_cases_filled(pos[0], pos[1])
                         state.board.put_water_t(pos[0], pos[1])
-                    if i == 1 and state.board[pos[0]+i][pos[1]] == "□":
-                        state.board[pos[0]+i][pos[1]] = "m"
-                        state.board.change_cases_filled(pos[0]+i, pos[1])
+                    if i == 1 and mid_value in ["□", "?"]:
+                        state.board.board[pos[0]+i][pos[1]] = "m"
+                        if mid_value != "?": state.board.change_cases_filled(pos[0]+i, pos[1])
                         state.board.put_water_m(pos[0]+i, pos[1])
-                    if i == 2 and state.board[pos[0]+i][pos[1]] == "□":
-                        state.board[pos[0]+i][pos[1]] = "b"
-                        state.board.change_cases_filled(pos[0]+i, pos[1])
+                    if i == 2 and mid_value in ["□", "?"]:
+                        state.board.board[pos[0]+i][pos[1]] = "b"
+                        if mid_value != "?": state.board.change_cases_filled(pos[0]+i, pos[1])
                         state.board.put_water_b(pos[0]+i, pos[1])
         
         elif size == 2:
             state.remove_from_fleet(2)
             if orient == "H":
                 for i in range(2):
-                    if i == 0 and state.board[pos[0]][pos[1]] == "□":
-                        state.board[pos[0]][pos[1]] = "l"
-                        state.board.change_cases_filled(pos[0], pos[1])
+                    mid_value = state.board.board[pos[0]][pos[1]+i]
+                    if i == 0 and value in ["□", "?"]:
+                        state.board.board[pos[0]][pos[1]] = "l"
+                        if value != "?": state.board.change_cases_filled(pos[0], pos[1])
                         state.board.put_water_l(pos[0], pos[1])
-                    elif i == 1 and state.board[pos[0]][pos[1]+i] == "□":
-                        state.board[pos[0]][pos[1]+i] = "r"
-                        state.board.change_cases_filled(pos[0], pos[1]+i)
+                    elif i == 1 and state.board.board[pos[0]][pos[1]+i] in ["□", "?"]:
+                        state.board.board[pos[0]][pos[1]+i] = "r"
+                        if mid_value != "?": state.board.change_cases_filled(pos[0], pos[1]+i)
                         state.board.put_water_r(pos[0], pos[1]+i)
             else:
                 for i in range(2):
-                    if i == 0 and state.board[pos[0]][pos[1]] == "□":
-                        state.board[pos[0]][pos[1]] = "t"
-                        state.board.change_cases_filled(pos[0], pos[1])
+                    mid_value = state.board.board[pos[0]+i][pos[1]]
+                    if i == 0 and value in ["□", "?"]:
+                        state.board.board[pos[0]][pos[1]] = "t"
+                        if value != "?": state.board.change_cases_filled(pos[0], pos[1])
                         state.board.put_water_t(pos[0], pos[1])
-                    if i == 1 and state.board[pos[0]+i][pos[1]] == "□":
-                        state.board[pos[0]+i][pos[1]] = "b"
-                        state.board.change_cases_filled(pos[0]+i, pos[1])
+                    if i == 1 and mid_value in ["□", "?"]:
+                        state.board.board[pos[0]+i][pos[1]] = "b"
+                        if mid_value != "?": state.board.change_cases_filled(pos[0]+i, pos[1])
                         state.board.put_water_b(pos[0]+i, pos[1])
 
         elif size == 1:
                 state.remove_from_fleet(1)
-                state.board[pos[0]][pos[1]] = "c"
+                state.board.board[pos[0]][pos[1]] = "c"
                 state.board.change_cases_filled(pos[0], pos[1])
                 state.board.put_water_c(pos[0], pos[1])   
             
@@ -718,9 +727,15 @@ class Bimaru(Problem):
         """Retorna True se e só se o estado passado como argumento é
         um estado objetivo. Deve verificar se todas as posições do tabuleiro
         estão preenchidas de acordo com as regras do problema."""
+        self.called += 1
+        print(self.called)
         if state.board.fleet != []: return False
         for count in range(10):
-            if state.board[count][10] != 0 or state.board[10][count] != 0:
+            for col in range(10):
+                if state.board.get_value(count, col) in ["?", "□"]:
+                    print(state.board.get_value(count, col))
+                    return False
+            if int(state.board.board[count][10]) > 0 or int(state.board.board[10][count]) > 0:
                 return False
         return True
         
@@ -736,15 +751,17 @@ if __name__ == "__main__":
     board = Board.parse_instance()
     problem  = Bimaru(board)
     s0 = problem.initial
-    print(problem.actions(s0))
-    
-
+    for row in range(0, 11, 1):
+        for col in range(0, 11, 1):
+            print(board.board[row][col], end=" ")
+        print()
+    print("+------------------------------------------------+")
+    depth_first_tree_search(problem)
 
 
 
     """ board.actions_initial()
     problem = Bimaru(board)
-    depth_first_tree_search(problem)
 
 
 
