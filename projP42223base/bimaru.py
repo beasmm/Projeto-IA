@@ -443,7 +443,6 @@ class Board:
                     self.put_water_c(row, col)
         
         self.make_stuff_happen()
-        print(self.fleet)
 
         
 
@@ -498,7 +497,6 @@ class Bimaru(Problem):
                                     actions.append([(row, col), 4, "H"]) 
                     
                     if value in ["T", "t", None, "?"]:
-                        #print(row, col, value)
                         if state.board.board[row+1][col] in ["M", "m", "□", "?"]:
                             if state.board.board[row+2][col] in ["M", "m", "□", "?"]:
                                 if state.board.board[row+3][col] in ["B", "b", "□", "?"]:
