@@ -137,12 +137,28 @@ class Board:
         self.board[row][10] = str(int(self.board[row][10]) - 1)
         self.board[10][col] = str(int(self.board[10][col]) - 1)
     
-    def remove_from_fleet(self, size: int):
-        for i in range(len(self.fleet)):
-            if (self.fleet[i] == size):
-                self.fleet.pop(i)
-                return
+    def calculate_boat_size(self, row: int, col: int) -> int:
+        if self.get_value(row, col) in ["b", "B", "t", "T", "l", "L", "r", "R"]:
+            return 2
+        
+        adjacent_top, adjacent_bottom = self.adjacent_vertical_values(row, col)
+        adjacent_left, adjacent_right = self.adjacent_horizontal_values(row, col)
 
+        if (adjacent_top in ["t", "T"] and adjacent_bottom in ["b", "B"]) or (adjacent_left in ["l", "L"] and adjacent_right in ["r", "R"]):
+            return 3
+        
+        elif adjacent_top in ["m", "M"] or adjacent_bottom in ["m", "m"] or adjacent_left in ["m", "M"] and adjacent_right in ["m", "M"]:
+            return 4
+        
+        return 0
+
+
+    def remove_from_fleet(self, size: int):
+        if size != 0:
+            for i in range(len(self.fleet)):
+                if (self.fleet[i] == size):
+                    self.fleet.pop(i)
+                    return
 
     def case_M(self, row: int, col: int):
         if self.adjacent_horizontal_values(row, col)[0] in ["W", ".", None] or self.adjacent_horizontal_values(row, col)[1] in ["W", ".", None]:
@@ -173,24 +189,25 @@ class Board:
             self.remove_from_fleet(1)
             return
         
-        elif self.adjacent_vertical_values(row, col)[0] in ["t", "T", "m", "M", "?"] and self.adjacent_vertical_values(row, col)[1] in [".", "W", None]:
-            self.board[row][col] = "b"
-            if self.adjacent_vertical_values(row, col)[0] in ["T", "t"]: 
-                self.remove_from_fleet(2)
-                return
-            elif self.adjacent_vertical_values(row, col)[0] in ["m", "M"]:
-                if self.adjacent_vertical_values(row - 1, col)[0] in ["T", "M"]:
-                    self.remove_from_fleet(3)
-                    return
-                else:
-                    self.remove_from_fleet(4)
-                    return
-                
         elif self.adjacent_vertical_values(row, col)[0] in [".", "W", None] and self.adjacent_vertical_values(row, col)[1] in ["b", "B", "m", "M", "?"]:
             self.board[row][col] = "t"
+            self.remove_from_fleet(self.calculate_boat_size(row + 1, col))
+
+        elif self.adjacent_vertical_values(row, col)[0] in ["t", "T", "m", "M", "?"] and self.adjacent_vertical_values(row, col)[1] in [".", "W", None]:
+            self.board[row][col] = "b"
+            self.remove_from_fleet(self.calculate_boat_size(row - 1, col))
+                
+        elif self.adjacent_horizontal_values(row, col)[0] in [".", "W", None] and self.adjacent_horizontal_values(row, col)[1] in ["r", "R", "m", "M", "?"]:
+            self.board[row][col] = "l"
+            self.remove_from_fleet(self.calculate_boat_size(row, col + 1))
+
+        elif self.adjacent_horizontal_values(row, col)[0] in ["l", "L", "m", "M", "?"] and self.adjacent_horizontal_values(row, col)[1] in [".", "W", None]:
+            self.board[row][col] = "r"
+            self.remove_from_fleet(self.calculate_boat_size(row, col - 1))
         
         elif self.adjacent_vertical_values(row, col)[0] in ["t", "T", "m", "M", "?"] and self.adjacent_vertical_values(row, col)[1] in ["b", "B", "M", "?", "m"]:
             self.board[row][col] = "m"
+            self.remove_from_fleet(self.calculate_boat_size(row, col))
 
         return
 
@@ -426,7 +443,7 @@ class Board:
                     self.put_water_c(row, col)
         
         self.make_stuff_happen()
-
+        print(self.fleet)
 
         
 
