@@ -486,21 +486,36 @@ class Bimaru(Problem):
         partir do estado passado como argumento."""
         actions = []
         boats = state.board.fleet
+        if boats == actions: return actions
+
         if boats[0] == 4:
             for row in range(11):
                 for col in range(11):
                     value = state.board.get_value(row, col)
                     if value in ["L", "l", None, "?"]:
+                        row_value = int(state.board.board[row][10])
+                        if value == None and int(state.board.board[10][col]) >=1: row_value -= 1
                         if state.board.board[row][col+1] in ["M", "m", "□", "?"]:
+                            if state.board.board[row][col+1] == "□" and int(state.board.board[10][col+1]) >=1: row_value -= 1
                             if state.board.board[row][col+2] in ["M", "m", "□", "?"]:
+                                if state.board.board[row][col+2] == "□" and int(state.board.board[10][col+2]) >=1: row_value -= 1
                                 if state.board.board[row][col+3] in ["□", "?", "R", "r"]:
-                                    actions.append([(row, col), 4, "H"]) 
+                                    if state.board.board[row][col+3] == "□" and int(state.board.board[10][col+3]) >=1: row_value -= 1
+                                    if row_value >= 0:
+                                        actions.append([(row, col), 4, "H"]) 
                     
                     if value in ["T", "t", None, "?"]:
+                        col_value = int(state.board.board[10][col])
+                        if value == None and int(state.board.board[row][10]) >=1: col_value -= 1
                         if state.board.board[row+1][col] in ["M", "m", "□", "?"]:
+                            if state.board.board[row+1][col]== "□" and int(state.board.board[row +1][10]) >=1: col_value -= 1
                             if state.board.board[row+2][col] in ["M", "m", "□", "?"]:
+                                if state.board.board[row+2][col]== "□" and int(state.board.board[row +2][10]) >=1: col_value -= 1
                                 if state.board.board[row+3][col] in ["B", "b", "□", "?"]:
-                                    actions.append([(row, col), 4, "V"])
+                                    if state.board.board[row+3][col]== "□" and int(state.board.board[row +3][10]) >=1: col_value -= 1
+                                    if col_value >= 0:
+                                        actions.append([(row, col), 4, "V"]) 
+
         
         if boats[0] == 3:
             for row in range(11):
@@ -508,56 +523,82 @@ class Bimaru(Problem):
                     value = state.board.get_value(row, col)
                     control = ""
                     if value in ["L", "l", None, "?"]:
+                        row_value = int(state.board.board[row][10])
                         if value == "L" or value == "l":
                             control += "l"
+                        if value == None and int(state.board.board[10][col]) >=1: row_value -= 1
+
                         if state.board.board[row][col+1] in ["M", "m", "□", "?"]:
                             if value == "M" or value == "m":
                                 control += "m"
+                            if state.board.board[row][col+1] == "□" and int(state.board.board[10][col+1]) >=1: row_value -= 1
+                           
                             if state.board.board[row][col+2] in ["R", "r", "□", "?"]:
-                                    if value == "R" or value == "r":
-                                        control += "r"
-                                    if control != "lmr": actions.append([(row, col), 3, "H"]) 
+                                if value == "R" or value == "r" and int(state.board.board[10][col+2]) >=1:
+                                    control += "r"
+                                if state.board.board[row][col+2] == "□": row_value -= 1
+                                if control != "lmr" and row_value >= 0: actions.append([(row, col), 3, "H"]) 
                     
                     if value in ["T", "t", None, "?"]:
-                        if value == "T" or value == "t":
+                        col_value = int(state.board.board[10][col])
+                        if value == "T" or value == "t" and int(state.board.board[row][10]) >=1:
                             control += "t"
+                        if value == None and int(state.board.board[row][10]) >=1: col_value -= 1
+
                         if state.board.board[row+1][col] in ["M", "m", "□", "?"]:
-                            if value == "M" or value == "m":
+                            if value == "M" or value == "m" and int(state.board.board[row+1][10]) >=1:
                                 control += "m"
+                            if state.board.board[row+1][col] == "□" and int(state.board.board[row+1][10]) >=1: col_value -= 1
+
                             if state.board.board[row+1][col] in ["B", "b", "□", "?"]:
-                                if value == "B" or value == "b":
+                                if value == "B" or value == "b" and int(state.board.board[row+2][10]) >=1:
                                         control += "b"
-                                actions.append([(row, col), 3, "V"])
-             
+                                if state.board.board[row+2][col] == "□" and int(state.board.board[row+2][10]) >=1: col_value -= 1
+                                if control != "tmb" and col_value >= 0: actions.append([(row, col), 3, "V"])
+
         if boats[0] == 2:
             for row in range(11):
                 for col in range(11):
                     value = state.board.get_value(row, col)
                     control = ""
+
                     if value in ["L", "l", None, "?"]:
-                        if value == "L" or value == "l":
+                        row_value = int(state.board.board[row][10])
+                        if value == "L" or value == "l" and int(state.board.board[10][col]) >=1:
                             control += "l"
+                        if value == None and int(state.board.board[10][col]) >=1: row_value -= 1
+                        
                         if state.board.board[row][col+1] in ["R", "r", "□", "?"]:
                             if value == "R" or value == "r":
                                 control += "r"
-                            if control != "lr": actions.append([(row, col), 2, "H"])
+                            if state.board.board[row][col+1] == "□" and int(state.board.board[10][col+1]) >=1: row_value -= 1
+
+                            if control != "lr" and row_value >= 0: actions.append([(row, col), 2, "H"])
                     
                     if value in ["T", "t", None, "?"]:
+                        col_value = int(state.board.board[10][col])
                         if value == "T" or value == "t":
                             control += "t"
+                        if value == None and int(state.board.board[row][10]) >=1: col_value -= 1
+
                         if state.board.board[row+1][col] in ["B", "b", "□", "?"]:
                             if value == "B" or value == "b":
                                 control += "b"
-                            if control != "tb": actions.append([(row, col), 2, "V"])
+                            if state.board.board[row+1][col] == "□" and int(state.board.board[row+1][10]) >=1: col_value -= 1
+
+                            if control != "tb" and col_value >= 0: actions.append([(row, col), 2, "V"])
         
         if boats[0] == 1:
             for row in range(11):
                 for col in range(11):
                     value = state.board.get_value(row, col)
-                    if value in [None, "?"]:
+                    if value == None and int(state.board.board[10][col]) >=1 and int(state.board.board[row][10]) >=1: 
                         actions.append([(row, col), 1, "H"])
-                    
+                    elif value == "?" and int(state.board.board[10][col]) >=1 and int(state.board.board[row][10]) >=1:
+                        actions.append([(row, col), 1, "H"])
         return actions
+
+
 
         
     def result(self, state: BimaruState, action):
@@ -694,9 +735,8 @@ class Bimaru(Problem):
 if __name__ == "__main__":
     board = Board.parse_instance()
     problem  = Bimaru(board)
-    s0 = BimaruState(board)
-
-    #print(problem.actions(s0))
+    s0 = problem.initial
+    print(problem.actions(s0))
     
 
 
