@@ -238,7 +238,6 @@ class Board:
                     self.clear_boats_col(col)
 
     def put_water_t(self, row, col):
-        self.change_cases_filled(row, col)
         if row == 0:
             if 0 < col:
                 if self.get_value(row, col - 1) != "W": self.board[row][col - 1] = "."
@@ -261,7 +260,6 @@ class Board:
                 if self.get_value(row + 1, col + 1) != "W": self.board[row + 1][col + 1] = "."
     
     def put_water_b(self, row, col):
-        self.change_cases_filled(row, col)
         if row == 9:
             if 0 < col:
                 if self.get_value(row , col + 1) != "W": self.board[row][col + 1] = "."
@@ -284,7 +282,6 @@ class Board:
                 if self.get_value(row - 1, col + 1) != "W": self.board[row - 1][col + 1] = "."
 
     def put_water_l(self, row, col):
-        self.change_cases_filled(row, col)
         if col == 0:
             if 0 < row:
                 if self.get_value(row - 1, col) != "W": self.board[row - 1][col] = "."
@@ -307,7 +304,6 @@ class Board:
                 if self.get_value(row + 1, col + 1) != "W": self.board[row + 1][col + 1] = "."
 
     def put_water_r(self, row, col):
-        self.change_cases_filled(row, col)
         if col == 9:
             if 0 < row:
                 if self.get_value(row + 1, col) != "W": self.board[row + 1][col] = "."
@@ -369,6 +365,7 @@ class Board:
                 
                 """ T """
                 if value == "T":
+                    self.change_cases_filled(row, col)
                     self.board[row + 1][col] = "?"
                     self.change_cases_filled(row + 1, col)         
                     self.put_water_t(row, col)
@@ -376,6 +373,7 @@ class Board:
 
                 """ B """
                 if value == "B":
+                    self.change_cases_filled(row, col)
                     self.board[row - 1][col] = "?"
                     self.change_cases_filled(row - 1, col)
                     self.put_water_b(row, col)
@@ -383,6 +381,7 @@ class Board:
 
                 """ L """
                 if value == "L":
+                    self.change_cases_filled(row, col)
                     self.board[row][col +1] = "?"
                     self.change_cases_filled(row, col + 1)
                     self.put_water_l(row, col)
@@ -391,6 +390,7 @@ class Board:
 
                 """ R """
                 if value == "R":
+                    self.change_cases_filled(row, col)
                     self.board[row][col -1] = "?"
                     self.change_cases_filled(row, col - 1)
                     self.put_water_r(row, col)
