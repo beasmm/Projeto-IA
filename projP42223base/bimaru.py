@@ -35,6 +35,15 @@ class BimaruState:
 class Board:
     """Representação interna de um tabuleiro de Bimaru."""
 
+    #DELETE
+    def print_board(self):
+        for row in range(11):
+            for col in range(11):
+                print(self.board[row][col], end=" ")
+            print()
+        print()
+
+
     def __init__(self):
         self.board = [["□"] * 11 for _ in range(11)]
         self.fleet = [4, 3, 3, 2, 2, 2, 1, 1, 1, 1]
@@ -61,6 +70,13 @@ class Board:
         if col == 9: 
             return self.get_value(row, col - 1), None
         return self.get_value(row, col - 1), self.get_value(row, col + 1)
+
+
+    def copy_board(self, old_board):
+        self.fleet = old_board.fleet[:]
+        for row in range(11):
+            for col in range(11):
+                self.board[row][col] = old_board.board[row][col]
         
     
     def check_rows(self, row: int):
@@ -134,8 +150,13 @@ class Board:
     
     def change_cases_filled(self, row: int, col: int):
         """Diminui o número de posições que aind apodem ser preenchidas """
-        self.board[row][10] = str(int(self.board[row][10]) - 1)
-        self.board[10][col] = str(int(self.board[10][col]) - 1)
+        row_10, col_10 = int(self.board[row][10]) - 1, int(self.board[10][col]) - 1
+        self.board[row][10] = str(row_10)
+        if row_10 == 0:
+            self.fill_rows(row, 2)
+        self.board[10][col] = str(col_10)
+        if col_10 == 0: 
+            self.fill_cols(col, 2)
     
     def calculate_boat_size(self, row: int, col: int) -> int:
         if self.get_value(row, col) in ["b", "B", "t", "T", "l", "L", "r", "R"]:
@@ -147,7 +168,7 @@ class Board:
         if (adjacent_top in ["t", "T"] and adjacent_bottom in ["b", "B"]) or (adjacent_left in ["l", "L"] and adjacent_right in ["r", "R"]):
             return 3
         
-        elif adjacent_top in ["m", "M"] or adjacent_bottom in ["m", "m"] or adjacent_left in ["m", "M"] and adjacent_right in ["m", "M"]:
+        elif adjacent_top in ["m", "M"] or adjacent_bottom in ["m", "m"] or adjacent_left in ["m", "M"] or adjacent_right in ["m", "M"]:
             return 4
         
         return 0
@@ -191,18 +212,33 @@ class Board:
         
         elif self.adjacent_vertical_values(row, col)[0] in [".", "W", None] and self.adjacent_vertical_values(row, col)[1] in ["b", "B", "m", "M", "?"]:
             self.board[row][col] = "t"
+            self.put_water_t(row, col)
+            self.remove_from_fleet(self.calculate_boat_size(row + 1, col))
 
         elif self.adjacent_vertical_values(row, col)[0] in ["t", "T", "m", "M", "?"] and self.adjacent_vertical_values(row, col)[1] in [".", "W", None]:
             self.board[row][col] = "b"
+            self.put_water_b(row, col)
+            self.remove_from_fleet(self.calculate_boat_size(row - 1, col))
                 
         elif self.adjacent_horizontal_values(row, col)[0] in [".", "W", None] and self.adjacent_horizontal_values(row, col)[1] in ["r", "R", "m", "M", "?"]:
             self.board[row][col] = "l"
+            self.put_water_l(row, col)
+            self.remove_from_fleet(self.calculate_boat_size(row, col + 1))
 
         elif self.adjacent_horizontal_values(row, col)[0] in ["l", "L", "m", "M", "?"] and self.adjacent_horizontal_values(row, col)[1] in [".", "W", None]:
             self.board[row][col] = "r"
+            self.put_water_r(row, col)
+            self.remove_from_fleet(self.calculate_boat_size(row , col - 1))
         
         elif self.adjacent_vertical_values(row, col)[0] in ["t", "T", "m", "M", "?"] and self.adjacent_vertical_values(row, col)[1] in ["b", "B", "M", "?", "m"]:
             self.board[row][col] = "m"
+            self.put_water_m(row, col)
+            self.remove_from_fleet(self.calculate_boat_size(row , col))
+        
+        elif self.adjacent_horizontal_values(row, col)[0] in ["l", "L", "m", "M", "?"] and self.adjacent_horizontal_values(row, col)[1] in ["r", "R", "M", "?", "m"]:
+            self.board[row][col] = "m"
+            self.put_water_m(row, col)
+            self.remove_from_fleet(self.calculate_boat_size(row , col))
 
         return
 
@@ -220,6 +256,42 @@ class Board:
                 self.clear_case(row, col)
         return
     
+    def put_boat(self, row: int, col: int, size: int, orientation):
+        if size >= 2:
+            print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+            print("putting boat: [(" + str(row) + ", " + str(col) + "), " + str(size) + ", " + orientation + "]")
+
+        if size == 1:
+            self.board[row][col] = "c"
+            self.change_cases_filled(row, col)
+
+        elif orientation == "H":
+            if col != 0 and self.board[row][col - 1] == "□": self.board[row][col - 1] = "."
+            for i in range(size):
+                if self.get_value(row, col + i) == "□":
+                    self.board[row][col + i] = "?"
+                    self.change_cases_filled(row, col + i)
+            if self.board[row][col + size] == "□": self.board[row][col + size] = "."
+
+            self.clear_boats_row(row)
+
+        elif orientation == "V":
+            if row != 0 and self.board[row - 1][col] == "□": self.board[row - 1][col] = "."
+            for i in range(size):
+                if self.get_value(row + i, col) == "□":
+                    self.board[row + i][col] = "?"
+                    self.change_cases_filled(row + i, col)
+            if self.board[row + size][col] == "□": self.board[row + size][col] = "."
+            self.clear_boats_col(col)
+
+        self.remove_from_fleet(size)
+
+        if size >= 2:
+            self.print_board()
+            print(self.fleet)
+            print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~end")
+
+
     def make_stuff_happen(self):
         count = 0
         while count == 0:
@@ -240,102 +312,102 @@ class Board:
     def put_water_t(self, row, col):
         if row == 0:
             if 0 < col:
-                if self.get_value(row, col - 1) != "W": self.board[row][col - 1] = "."
-                if self.get_value(row + 1, col - 1) != "W": self.board[row + 1][col - 1] = "."
+                if self.get_value(row, col - 1) == "□": self.board[row][col - 1] = "."
+                if self.get_value(row + 1, col - 1) == "□": self.board[row + 1][col - 1] = "."
                 
             if col < 9:
-                if self.get_value(row, col + 1) != "W": self.board[row][col + 1] = "."
-                if self.get_value(row + 1, col + 1) != "W":self.board[row + 1][col + 1] = "."
+                if self.get_value(row, col + 1) == "□": self.board[row][col + 1] = "."
+                if self.get_value(row + 1, col + 1) == "□": self.board[row + 1][col + 1] = "."
 
         if 0 < row < 9:
-            if self.get_value(row - 1, col) != "W": self.board[row - 1][col] = "."
+            if self.get_value(row - 1, col) == "□": self.board[row - 1][col] = "."
             if 0 < col:
-                if self.get_value(row, col - 1) != "W": self.board[row][col - 1] = "."
-                if self.get_value(row - 1, col - 1) != "W": self.board[row - 1][col - 1] = "."
-                if self.get_value(row + 1, col - 1) != "W": self.board[row + 1][col - 1] = "."
+                if self.get_value(row, col - 1) == "□": self.board[row][col - 1] = "."
+                if self.get_value(row - 1, col - 1) == "□": self.board[row - 1][col - 1] = "."
+                if self.get_value(row + 1, col - 1) == "□": self.board[row + 1][col - 1] = "."
                 
             if col < 9:
-                if self.get_value(row, col + 1) != "W": self.board[row][col + 1] = "."
-                if self.get_value(row - 1, col + 1) != "W": self.board[row - 1][col + 1] = "."
-                if self.get_value(row + 1, col + 1) != "W": self.board[row + 1][col + 1] = "."
+                if self.get_value(row, col + 1) == "□": self.board[row][col + 1] = "."
+                if self.get_value(row - 1, col + 1) == "□": self.board[row - 1][col + 1] = "."
+                if self.get_value(row + 1, col + 1) == "□": self.board[row + 1][col + 1] = "."
     
     def put_water_b(self, row, col):
         if row == 9:
             if 0 < col:
-                if self.get_value(row , col + 1) != "W": self.board[row][col + 1] = "."
-                if self.get_value(row - 1, col + 1) != "W":self.board[row - 1][col + 1] = "."
+                if self.get_value(row , col + 1) == "□": self.board[row][col + 1] = "."
+                if self.get_value(row - 1, col + 1) == "□":self.board[row - 1][col + 1] = "."
                 
             if col < 9:
-                if self.get_value(row, col - 1) != "W": self.board[row][col - 1] = "."
-                if self.get_value(row - 1, col - 1) != "W":self.board[row - 1][col - 1] = "."
+                if self.get_value(row, col - 1) == "□": self.board[row][col - 1] = "."
+                if self.get_value(row - 1, col - 1) == "□":self.board[row - 1][col - 1] = "."
 
         if 0 < row < 9:
-            if self.get_value(row + 1, col) != "W": self.board[row + 1][col] = "."
+            if self.get_value(row + 1, col) == "□": self.board[row + 1][col] = "."
             if 0 < col:
-                if self.get_value(row, col - 1) != "W": self.board[row][col - 1] = "."
-                if self.get_value(row + 1, col - 1) != "W": self.board[row + 1][col - 1] = "."
-                if self.get_value(row - 1, col - 1) != "W": self.board[row - 1][col - 1] = "."
+                if self.get_value(row, col - 1) == "□": self.board[row][col - 1] = "."
+                if self.get_value(row + 1, col - 1) == "□": self.board[row + 1][col - 1] = "."
+                if self.get_value(row - 1, col - 1) == "□": self.board[row - 1][col - 1] = "."
                 
             if col < 9:
-                if self.get_value(row, col + 1) != "W": self.board[row][col + 1] = "."
-                if self.get_value(row + 1, col + 1) != "W": self.board[row + 1][col + 1] = "."
-                if self.get_value(row - 1, col + 1) != "W": self.board[row - 1][col + 1] = "."
+                if self.get_value(row, col + 1) == "□": self.board[row][col + 1] = "."
+                if self.get_value(row + 1, col + 1) == "□": self.board[row + 1][col + 1] = "."
+                if self.get_value(row - 1, col + 1) == "□": self.board[row - 1][col + 1] = "."
 
     def put_water_l(self, row, col):
         if col == 0:
             if 0 < row:
-                if self.get_value(row - 1, col) != "W": self.board[row - 1][col] = "."
-                if self.get_value(row - 1, col + 1) != "W": self.board[row - 1][col + 1] = "."
+                if self.get_value(row - 1, col) == "□": self.board[row - 1][col] = "."
+                if self.get_value(row - 1, col + 1) == "□": self.board[row - 1][col + 1] = "."
 
             if row < 9:
-                if self.get_value(row + 1, col) != "W": self.board[row + 1][col] = "."
-                if self.get_value(row + 1, col - 1) != "W": self.board[row + 1][col + 1] = "."
+                if self.get_value(row + 1, col) == "□": self.board[row + 1][col] = "."
+                if self.get_value(row + 1, col - 1) == "□": self.board[row + 1][col + 1] = "."
 
         if 0 < col < 9:
-            if self.get_value(row, col - 1) != "W": self.board[row][col - 1] = "."
+            if self.get_value(row, col - 1) == "□": self.board[row][col - 1] = "."
             if 0 < row:
-                if self.get_value(row - 1, col) != "W": self.board[row - 1][col] = "."
-                if self.get_value(row - 1, col - 1) != "W": self.board[row - 1][col - 1] = "."
-                if self.get_value(row - 1, col + 1) != "W": self.board[row - 1][col + 1] = "."
+                if self.get_value(row - 1, col) == "□": self.board[row - 1][col] = "."
+                if self.get_value(row - 1, col - 1) == "□": self.board[row - 1][col - 1] = "."
+                if self.get_value(row - 1, col + 1) == "□": self.board[row - 1][col + 1] = "."
                 
             if row < 9:
-                if self.get_value(row + 1, col) != "W": self.board[row + 1][col] = "."
-                if self.get_value(row + 1, col - 1) != "W": self.board[row + 1][col - 1] = "."
-                if self.get_value(row + 1, col + 1) != "W": self.board[row + 1][col + 1] = "."
+                if self.get_value(row + 1, col) == "□": self.board[row + 1][col] = "."
+                if self.get_value(row + 1, col - 1) == "□": self.board[row + 1][col - 1] = "."
+                if self.get_value(row + 1, col + 1) == "□": self.board[row + 1][col + 1] = "."
 
     def put_water_r(self, row, col):
         if col == 9:
             if 0 < row:
-                if self.get_value(row + 1, col) != "W": self.board[row + 1][col] = "."
-                if self.get_value(row + 1, col - 1) != "W": self.board[row + 1][col - 1] = "."
+                if self.get_value(row + 1, col) == "□": self.board[row + 1][col] = "."
+                if self.get_value(row + 1, col - 1) == "□": self.board[row + 1][col - 1] = "."
 
             if row < 9:             
-                if self.get_value(row - 1, col) != "W": self.board[row - 1][col] = "."
-                if self.get_value(row - 1, col - 1) != "W": self.board[row - 1][col - 1] = "."
+                if self.get_value(row - 1, col) == "□": self.board[row - 1][col] = "."
+                if self.get_value(row - 1, col - 1) == "□": self.board[row - 1][col - 1] = "."
 
         if 0 < col < 9:
-            if self.get_value(row, col + 1) != "W": self.board[row][col + 1] = "."
+            if self.get_value(row, col + 1) == "□": self.board[row][col + 1] = "."
             if 0 < row:
-                if self.get_value(row - 1, col) != "W": self.board[row - 1][col] = "."
-                if self.get_value(row - 1, col - 1) != "W": self.board[row - 1][col - 1] = "."
-                if self.get_value(row - 1, col + 1) != "W": self.board[row - 1][col + 1] = "."
+                if self.get_value(row - 1, col) == "□": self.board[row - 1][col] = "."
+                if self.get_value(row - 1, col - 1) == "□": self.board[row - 1][col - 1] = "."
+                if self.get_value(row - 1, col + 1) == "□": self.board[row - 1][col + 1] = "."
                 
             if row < 9:
-                if self.get_value(row + 1, col) != "W": self.board[row + 1][col] = "."
-                if self.get_value(row + 1, col - 1) != "W": self.board[row + 1][col - 1] = "."
-                if self.get_value(row + 1, col + 1) != "W":self.board[row + 1][col + 1] = "."
+                if self.get_value(row + 1, col) == "□": self.board[row + 1][col] = "."
+                if self.get_value(row + 1, col - 1) == "□": self.board[row + 1][col - 1] = "."
+                if self.get_value(row + 1, col + 1) == "□":self.board[row + 1][col + 1] = "."
 
     def put_water_m(self, row, col):
         if row != 0:
             if col != 0:
-                if self.get_value(row - 1, col - 1) != "W": self.board[row - 1][col - 1] = "."
+                if self.get_value(row - 1, col - 1) == "□": self.board[row - 1][col - 1] = "."
             if col != 9:
-                if self.get_value(row - 1, col + 1) != "W": self.board[row - 1][col + 1] = "."
+                if self.get_value(row - 1, col + 1) == "□": self.board[row - 1][col + 1] = "."
         if row != 9:
             if col != 0:
-                if self.get_value(row + 1, col - 1) != "W": self.board[row + 1][col - 1] = "."
+                if self.get_value(row + 1, col - 1) == "□": self.board[row + 1][col - 1] = "."
             if col != 9:
-                if self.get_value(row + 1, col + 1) != "W": self.board[row + 1][col + 1] = "."
+                if self.get_value(row + 1, col + 1) == "□": self.board[row + 1][col + 1] = "."
  
     def put_water_c(self, row, col):
         if col != 0:
@@ -461,48 +533,50 @@ class Bimaru(Problem):
                 for col in range(11):
                     value = state.board.get_value(row, col)
                     control = ""
-                    if value in ["L", "l", "□", "?"] and state.board.adjacent_vertical_values(row, col) in [(".", "."), ("□", "."), (".", "□")]:
-                        row_value = int(state.board.board[row][10])
-                        if value == "L" or value == "l":
-                            control += "l"
-                        if value == "□" and int(state.board.board[10][col]) >=1: row_value -= 1
-                        if state.board.board[row][col+1] in ["M", "m", "□", "?"] and state.board.adjacent_vertical_values(row, col+1) in [(".", "."), ("□", "."), (".", "□")]:
-                            if value == "M" or value == "m":
-                                control += "m"
-                            if state.board.board[row][col+1] == "□" and int(state.board.board[10][col+1]) >=1: row_value -= 1
-                            if state.board.board[row][col+2] in ["M", "m", "□", "?"] and state.board.adjacent_vertical_values(row, col+2) in [(".", "."), ("□", "."), (".", "□")]:
+                    if value in ["L", "l", "□", "?"] and state.board.adjacent_vertical_values(row, col)[0] in [".", "□", "W"] and state.board.adjacent_vertical_values(row, col)[1] in [".", "□", "W"]:
+                        if col + 4 < 10 and state.board.get_value(row, col + 4) in [".", "□", "W"]:    
+                            row_value = int(state.board.board[row][10])
+                            if value == "L" or value == "l":
+                                control += "l"
+                            if value == "□" and int(state.board.board[10][col]) >=1: row_value -= 1
+                            if state.board.board[row][col+1] in ["M", "m", "□", "?"] and state.board.adjacent_vertical_values(row, col+1)[0] in [".", "□", "W"] and state.board.adjacent_vertical_values(row, col+1)[1] in [".", "□", "W"]:
                                 if value == "M" or value == "m":
                                     control += "m"
-                                if state.board.board[row][col+2] == "□" and int(state.board.board[10][col+2]) >=1: row_value -= 1
-                                if state.board.board[row][col+3] in ["□", "?", "R", "r"] and state.board.adjacent_vertical_values(row, col+3) in [(".", "."), ("□", "."), (".", "□")]:
-                                    if value == "R" or value == "r" and int(state.board.board[10][col+2]) >=1:
-                                        control += "r"
-                                    if state.board.board[row][col+3] == "□" and int(state.board.board[10][col+3]) >=1: row_value -= 1
-                                    if control == "lmmr": state.board.remove_from_fleet(4)
-                                    if control != "lmmr" and row_value >= 0:
-                                        actions.append([(row, col), 4, "H"]) 
+                                if state.board.board[row][col+1] == "□" and int(state.board.board[10][col+1]) >=1: row_value -= 1
+                                if state.board.board[row][col+2] in ["M", "m", "□", "?"] and state.board.adjacent_vertical_values(row, col+2)[0] in [".", "□", "W"] and state.board.adjacent_vertical_values(row, col+2)[1] in [".", "□", "W"]:
+                                    if value == "M" or value == "m":
+                                        control += "m"
+                                    if state.board.board[row][col+2] == "□" and int(state.board.board[10][col+2]) >=1: row_value -= 1
+                                    if state.board.board[row][col+3] in ["□", "?", "R", "r"] and state.board.adjacent_vertical_values(row, col+3)[0] in [".", "□", "W"] and state.board.adjacent_vertical_values(row, col+3)[1] in [".", "□", "W"]:
+                                        if value == "R" or value == "r" and int(state.board.board[10][col+2]) >=1:
+                                            control += "r"
+                                        if state.board.board[row][col+3] == "□" and int(state.board.board[10][col+3]) >=1: row_value -= 1
+                                        if control == "lmmr": state.board.remove_from_fleet(4)
+                                        if control != "lmmr" and row_value >= 0:
+                                            actions.append([(row, col), 4, "H"]) 
                     
-                    if value in ["T", "t", "□", "?"] and state.board.adjacent_horizontal_values(row, col) in [(".", "."), ("□", "."), (".", "□")]:
+                    if value in ["T", "t", "□", "?"] and state.board.adjacent_horizontal_values(row, col) in [".", "□", "W"]:
                         if value == "T" or value == "t":
                             control += "t"
-                        col_value = int(state.board.board[10][col])
-                        if value == "□" and int(state.board.board[row][10]) >=1: col_value -= 1
-                        if state.board.board[row+1][col] in ["M", "m", "□", "?"] and state.board.adjacent_horizontal_values(row+1, col) in [(".", "."), ("□", "."), (".", "□")]:
-                            if state.board.board[row+1][col] == "M" or state.board.board[row+1][col] == "m":
-                                control += "m"
-                            if state.board.board[row+1][col]== "□" and int(state.board.board[row +1][10]) >=1: col_value -= 1
-                            if state.board.board[row+2][col] in ["M", "m", "□", "?"] and state.board.adjacent_horizontal_values(row+2, col) in [(".", "."), ("□", "."), (".", "□")]:
-                                if state.board.board[row+2][col] == "M" or state.board.board[row+2][col] == "m":
+                        if row + 4 < 10 and state.board.get_value(row + 4, col) in [".", "□", "W"]:
+                            col_value = int(state.board.board[10][col])
+                            if value == "□" and int(state.board.board[row][10]) >=1: col_value -= 1
+                            if state.board.board[row+1][col] in ["M", "m", "□", "?"] and state.board.adjacent_horizontal_values(row+1, col)[0] in [".", "□", "W"] and state.board.adjacent_horizontal_values(row+1, col)[1] in [".", "□", "W"]:
+                                if state.board.board[row+1][col] == "M" or state.board.board[row+1][col] == "m":
                                     control += "m"
-                                if state.board.board[row+2][col]== "□" and int(state.board.board[row +2][10]) >=1: col_value -= 1
-                                if state.board.board[row+3][col] in ["B", "b", "□", "?"] and state.board.adjacent_horizontal_values(row+3, col) in [(".", "."), ("□", "."), (".", "□")]:
-                                    if state.board.board[row+3][col] == "B" or state.board.board[row+3][col] == "b":
-                                        control += "b"
-                                    if state.board.board[row+3][col]== "□" and int(state.board.board[row +3][10]) >=1: col_value -= 1
-                                    if control == "tmmb": state.board.remove_from_fleet(4)
-                                    if control != "tmmb" and col_value >= 0:
-                                        actions.append([(row, col), 4, "V"]) 
-
+                                if state.board.board[row+1][col]== "□" and int(state.board.board[row +1][10]) >=1: col_value -= 1
+                                if state.board.board[row+2][col] in ["M", "m", "□", "?"] and state.board.adjacent_horizontal_values(row+2, col)[0] in [".", "□", "W"] and state.board.adjacent_horizontal_values(row+2, col)[1] in [".", "□", "W"]:
+                                    if state.board.board[row+2][col] == "M" or state.board.board[row+2][col] == "m":
+                                        control += "m"
+                                    if state.board.board[row+2][col] == "□" and int(state.board.board[row +2][10]) >=1: col_value -= 1
+                                    if state.board.board[row+3][col] in ["B", "b", "□", "?"] and state.board.adjacent_horizontal_values(row+3, col)[0] in [".", "□", "W"] and state.board.adjacent_horizontal_values(row+3, col)[1] in [".", "□", "W"]:
+                                        if state.board.board[row+3][col] == "B" or state.board.board[row+3][col] == "b":
+                                            control += "b"
+                                        if state.board.board[row+3][col]== "□" and int(state.board.board[row +3][10]) >=1: col_value -= 1
+                                        if control == "tmmb": state.board.remove_from_fleet(4)
+                                        if control != "tmmb" and col_value >= 0:
+                                            actions.append([(row, col), 4, "V"]) 
+            
         if boats == []: return actions
         
         if boats[0] == 3:
@@ -510,41 +584,44 @@ class Bimaru(Problem):
                 for col in range(11):
                     value = state.board.get_value(row, col)
                     control = ""
-                    if value in ["L", "l", "□", "?"] and state.board.adjacent_vertical_values(row, col) in [(".", "."), ("□", "."), (".", "□")]:
-                        row_value = int(state.board.board[row][10])
-                        if value == "L" or value == "l":
-                            control += "l"
-                        if value == "□" and int(state.board.board[10][col]) >=1: row_value -= 1
+                    if value in ["L", "l", "□", "?"] and state.board.adjacent_vertical_values(row, col) in [".", "□", "W"]:
+                        if col + 3 < 10 and state.board.get_value(row, col + 3) in [".", "□", "W"]:
+                            row_value = int(state.board.board[row][10])
+                            if value == "L" or value == "l":
+                                control += "l"
+                            if value == "□" and int(state.board.board[10][col]) >=1: row_value -= 1
 
-                        if state.board.board[row][col+1] in ["M", "m", "□", "?"] and state.board.adjacent_vertical_values(row, col+1) in [(".", "."), ("□", "."), (".", "□")]:
-                            if state.board.board[row][col+1] == "M" or state.board.board[row][col+1] == "m":
-                                control += "m"
-                            if state.board.board[row][col+1] == "□" and int(state.board.board[10][col+1]) >=1: row_value -= 1
+                            if state.board.board[row][col+1] in ["M", "m", "□", "?"] and state.board.adjacent_vertical_values(row, col+1)[0] in [".", "□", "W"] and state.board.adjacent_vertical_values(row, col+1)[1] in [".", "□", "W"]:
+                                if state.board.board[row][col+1] == "M" or state.board.board[row][col+1] == "m":
+                                    control += "m"
+                                if state.board.board[row][col+1] == "□" and int(state.board.board[10][col+1]) >=1: row_value -= 1
 
-                            if state.board.board[row][col+2] in ["R", "r", "□", "?"] and state.board.adjacent_vertical_values(row, col+2) in [(".", "."), ("□", "."), (".", "□")]:
-                                if state.board.board[row][col+2] == "R" or state.board.board[row][col+2] == "r":
-                                    control += "r"
-                                if state.board.board[row][col+2] == "□": row_value -= 1
-                                if control == "lmr": state.board.remove_from_fleet(3)
-                                if control != "lmr" and row_value >= 0: actions.append([(row, col), 3, "H"]) 
+                                if state.board.board[row][col+2] in ["R", "r", "□", "?"] and state.board.adjacent_vertical_values(row, col+2)[0] in [".", "□", "W"] and state.board.adjacent_vertical_values(row, col+2)[1] in [".", "□", "W"]:
+                                    if state.board.board[row][col+2] == "R" or state.board.board[row][col+2] == "r":
+                                        control += "r"
+                                    if state.board.board[row][col+2] == "□": row_value -= 1
+                                    if control == "lmr": state.board.remove_from_fleet(3)
+                                    if control != "lmr" and row_value >= 0: actions.append([(row, col), 3, "H"]) 
 
-                    if value in ["T", "t", "□", "?"] and state.board.adjacent_horizontal_values(row, col) in [(".", "."), ("□", "."), (".", "□")]:
-                        col_value = int(state.board.board[10][col])
-                        if value == "T" or value == "t" and int(state.board.board[row][10]) >=1:
-                            control += "t"
-                        if value == "□" and int(state.board.board[row][10]) >=1: col_value -= 1
+                    if value in ["T", "t", "□", "?"] and state.board.adjacent_horizontal_values(row, col)[0] in [".", "□", "W"] and state.board.adjacent_horizontal_values(row, col)[1] in [".", "□", "W"]:
+                        if row + 3 < 10 and state.board.get_value(row + 3, col) in [".", "□", "W"]:
+                            col_value = int(state.board.board[10][col])
+                            if value == "T" or value == "t" and int(state.board.board[row][10]) >=1:
+                                control += "t"
+                            if value == "□" and int(state.board.board[row][10]) >=1: col_value -= 1
 
-                        if state.board.board[row+1][col] in ["M", "m", "□", "?"] and state.board.adjacent_horizontal_values(row+1, col) in [(".", "."), ("□", "."), (".", "□")]:
-                            if state.board.board[row+1][col] == "M" or state.board.board[row+1][col] == "m":
-                                control += "m"
-                            if state.board.board[row+1][col] == "□" and int(state.board.board[row+1][10]) >=1: col_value -= 1
+                            if state.board.board[row+1][col] in ["M", "m", "□", "?"] and state.board.adjacent_horizontal_values(row+1, col)[0] in [".", "□", "W"] and state.board.adjacent_horizontal_values(row+1, col)[1] in [".", "□", "W"]:
+                                if state.board.board[row+1][col] == "M" or state.board.board[row+1][col] == "m":
+                                    control += "m"
+                                if state.board.board[row+1][col] == "□" and int(state.board.board[row+1][10]) >=1: col_value -= 1
 
-                            if state.board.board[row+1][col] in ["B", "b", "□", "?"] and state.board.adjacent_horizontal_values(row+2, col) in [(".", "."), ("□", "."), (".", "□")]:
-                                if state.board.board[row+1][col] == "B" or state.board.board[row+1][col] == "b":
-                                        control += "b"
-                                if state.board.board[row+2][col] == "□" and int(state.board.board[row+2][10]) >=1: col_value -= 1
-                                if control == "tmb": state.board.remove_from_fleet(3)
-                                if control != "tmb" and col_value >= 0: actions.append([(row, col), 3, "V"])
+                                if state.board.board[row+1][col] in ["B", "b", "□", "?"] and state.board.adjacent_horizontal_values(row+2, col)[0] in [".", "□", "W"] and state.board.adjacent_horizontal_values(row+2, col)[1] in [".", "□", "W"]:
+                                    if state.board.board[row+1][col] == "B" or state.board.board[row+1][col] == "b":
+                                            control += "b"
+                                    if state.board.board[row+2][col] == "□" and int(state.board.board[row+2][10]) >=1: col_value -= 1
+                                    if control == "tmb": state.board.remove_from_fleet(3)
+                                    if control != "tmb" and col_value >= 0: actions.append([(row, col), 3, "V"])
+            print(actions)
 
         if boats == []: return actions
         if boats[0] == 2:
@@ -553,32 +630,34 @@ class Bimaru(Problem):
                     value = state.board.get_value(row, col)
                     control = ""
 
-                    if value in ["L", "l", "□", "?"] and state.board.adjacent_horizontal_values(row, col) in [(".", "."), ("□", "."), (".", "□")]:
-                        row_value = int(state.board.board[row][10])
-                        if value == "L" or value == "l":
-                            control += "l"
-                        if value == "□" and int(state.board.board[10][col]) >=1: row_value -= 1
-                        
-                        if state.board.board[row][col+1] in ["R", "r", "□", "?"] and state.board.adjacent_horizontal_values(row, col+1) in [(".", "."), ("□", "."), (".", "□")]:
-                            if state.board.board[row][col+1] == "R" or state.board.board[row][col+1] == "r":
-                                control += "r"
-                            if state.board.board[row][col+1] == "□" and int(state.board.board[10][col+1]) >=1: row_value -= 1
-                            if control == "lr": state.board.remove_from_fleet(2)
-                            if control != "lr" and row_value >= 0: actions.append([(row, col), 2, "H"])
+                    if value in ["L", "l", "□", "?"] and state.board.adjacent_horizontal_values(row, col)[0] in [".", "□", "W"] and state.board.adjacent_horizontal_values(row, col)[1] in [".", "□", "W"]:
+                        if col + 2 < 10 and state.board.get_value(row, col + 2) in [".", "□", "W"]:
+                            row_value = int(state.board.board[row][10])
+                            if value == "L" or value == "l":
+                                control += "l"
+                            if value == "□" and int(state.board.board[10][col]) >=1: row_value -= 1
+                            
+                            if state.board.board[row][col+1] in ["R", "r", "□", "?"] and state.board.adjacent_horizontal_values(row, col+1)[0] in [".", "□", "W"] and state.board.adjacent_horizontal_values(row, col+1)[1] in [".", "□", "W"]:
+                                if state.board.board[row][col+1] == "R" or state.board.board[row][col+1] == "r":
+                                    control += "r"
+                                if state.board.board[row][col+1] == "□" and int(state.board.board[10][col+1]) >=1: row_value -= 1
+                                if control == "lr": state.board.remove_from_fleet(2)
+                                if control != "lr" and row_value >= 0: actions.append([(row, col), 2, "H"])
                     
-                    if value in ["T", "t", "□", "?"] and state.board.adjacent_horizontal_values(row, col) in [(".", "."), ("□", "."), (".", "□")]:
-                        col_value = int(state.board.board[10][col])
-                        if value == "T" or value == "t":
-                            control += "t"
-                        if value == "□" and int(state.board.board[row][10]) >=1: col_value -= 1
+                    if value in ["T", "t", "□", "?"] and state.board.adjacent_horizontal_values(row, col)[0] in [".", "□", "W"] and state.board.adjacent_horizontal_values(row, col)[1] in [".", "□", "W"]: 
+                        if row + 2 < 10 and state.board.get_value(row + 2, col) in [".", "□", "W"]:
+                            col_value = int(state.board.board[10][col])
+                            if value == "T" or value == "t":
+                                control += "t"
+                            if value == "□" and int(state.board.board[row][10]) >=1: col_value -= 1
 
-                        if state.board.board[row+1][col] in ["B", "b", "□", "?"] and state.board.adjacent_horizontal_values(row+1, col) in [(".", "."), ("□", "."), (".", "□")]:
-                            if state.board.board[row+1][col] == "B" or state.board.board[row+1][col] == "b":
-                                control += "b"
-                            if state.board.board[row+1][col] == "□" and int(state.board.board[row+1][10]) >=1: col_value -= 1
-                            if control == "tb": state.board.remove_from_fleet(2)
-                            if control != "tb" and col_value >= 0: actions.append([(row, col), 2, "V"])
-        
+                            if state.board.board[row+1][col] in ["B", "b", "□", "?"] and state.board.adjacent_horizontal_values(row+1, col)[0] in [".", "□", "W"] and state.board.adjacent_horizontal_values(row+1, col)[1] in [".", "□", "W"]:
+                                if state.board.board[row+1][col] == "B" or state.board.board[row+1][col] == "b":
+                                    control += "b"
+                                if state.board.board[row+1][col] == "□" and int(state.board.board[row+1][10]) >=1: col_value -= 1
+                                if control == "tb": state.board.remove_from_fleet(2)
+                                if control != "tb" and col_value >= 0: actions.append([(row, col), 2, "V"])
+            
         if boats == []: return actions
         if boats[0] == 1:
             for row in range(11):
@@ -589,7 +668,6 @@ class Bimaru(Problem):
                     elif value == "?" and int(state.board.board[10][col]) >=1 and int(state.board.board[row][10]) >=1:
                         actions.append([(row, col), 1, "H"])
         
-        print(actions)
         return actions
 
 
@@ -600,140 +678,32 @@ class Bimaru(Problem):
         'state' passado como argumento. A ação a executar deve ser uma
         das presentes na lista obtida pela execução de
         self.actions(state)."""
-        pos = action[0]
-        size = action[1]
-        orient = action[2]
-        value = state.board.get_value(pos[0], pos[1])
 
-        if size == 4:
-            state.board.remove_from_fleet(4)
-            if orient == "H":
-                for i in range(4):
-                    mid_value = state.board.board[pos[0]][pos[1]+i]
-                    if i == 0 and value in ["□", "?"]:
-                        state.board.board[pos[0]][pos[1]] = "l"
-                        if value != "?":state.board.change_cases_filled(pos[0], pos[1])
-                        state.board.put_water_l(pos[0], pos[1])
-                    elif i == 1 and mid_value in ["□", "?"]:
-                        state.board.board[pos[0]][pos[1]+i] = "m"
-                        if mid_value != "?": state.board.change_cases_filled(pos[0], pos[1]+i)
-                        state.board.put_water_m(pos[0], pos[1]+i)
-                    elif i == 2 and mid_value in ["□", "?"]:
-                        state.board.board[pos[0]][pos[1]+i] = "m"
-                        if mid_value != "?": state.board.change_cases_filled(pos[0], pos[1]+i)
-                        state.board.put_water_m(pos[0], pos[1]+i)
-                    elif i == 3 and mid_value in ["□", "?"]:
-                        state.board.board[pos[0]][pos[1]+i] = "r"
-                        if mid_value != "?": state.board.change_cases_filled(pos[0], pos[1]+i)
-                        state.board.put_water_r(pos[0], pos[1]+i)
-                    
+        new_board = Board()
+        new_board.copy_board(state.board)
+        new_state = BimaruState(new_board)
+        board = new_state.board
 
-            else:
-                for i in range(4):
-                    mid_value = state.board.board[pos[0]+i][pos[1]]
-                    if i == 0 and value in ["□", "?"]:
-                        state.board.board[pos[0]][pos[1]] = "t"
-                        state.board.change_cases_filled(pos[0], pos[1])
-                        state.board.put_water_t(pos[0], pos[1])
-                    if i == 1 and state.board.board[pos[0]+i][pos[1]] in ["□", "?"]:
-                        state.board.board[pos[0]+i][pos[1]] = "m"
-                        if mid_value != "?": state.board.change_cases_filled(pos[0]+i, pos[1])
-                        state.board.put_water_m(pos[0]+i, pos[1])
-                    if i == 2 and mid_value in ["□", "?"]:
-                        state.board.board[pos[0]+i][pos[1]] = "m"
-                        if mid_value != "?": state.board.change_cases_filled(pos[0]+i, pos[1])
-                        state.board.put_water_m(pos[0]+i, pos[1])
-                    if i == 3 and mid_value in ["□", "?"]:
-                        state.board.board[pos[0]+i][pos[1]] = "b"
-                        if mid_value != "?": state.board.change_cases_filled(pos[0]+i, pos[1])
-                        state.board.put_water_b(pos[0]+i, pos[1])
+        board.put_boat(action[0][0], action[0][1], action[1], action[2])
 
-        elif size == 3:
-            state.board.remove_from_fleet(3)
-            if orient == "H":
-                for i in range(3):
-                    mid_value = state.board.board[pos[0]][pos[1]+i]
-                    if i == 0 and value in ["□", "?"]:
-                        state.board.board[pos[0]][pos[1]] = "l"
-                        if value != "?": state.board.change_cases_filled(pos[0], pos[1])
-                        state.board.put_water_l(pos[0], pos[1])
-                    elif i == 1 and mid_value in ["□", "?"]:
-                        state.board.board[pos[0]][pos[1]+i] = "m"
-                        if mid_value != "?": state.board.change_cases_filled(pos[0], pos[1]+i)
-                        state.board.put_water_m(pos[0], pos[1]+i)
-                    elif i == 2 and mid_value in ["□", "?"]:
-                        state.board.board[pos[0]][pos[1]+i] = "r"
-                        if mid_value != "?": state.board.change_cases_filled(pos[0], pos[1]+i)
-                        state.board.put_water_r(pos[0], pos[1]+i)
-            else:
-                for i in range(3):
-                    mid_value = state.board.board[pos[0]+i][pos[1]]
-                    if i == 0 and value in ["□", "?"]:
-                        state.board.board[pos[0]][pos[1]] = "t"
-                        if value != "?": state.board.change_cases_filled(pos[0], pos[1])
-                        state.board.put_water_t(pos[0], pos[1])
-                    if i == 1 and mid_value in ["□", "?"]:
-                        state.board.board[pos[0]+i][pos[1]] = "m"
-                        if mid_value != "?": state.board.change_cases_filled(pos[0]+i, pos[1])
-                        state.board.put_water_m(pos[0]+i, pos[1])
-                    if i == 2 and mid_value in ["□", "?"]:
-                        state.board.board[pos[0]+i][pos[1]] = "b"
-                        if mid_value != "?": state.board.change_cases_filled(pos[0]+i, pos[1])
-                        state.board.put_water_b(pos[0]+i, pos[1])
-        
-        elif size == 2:
-            state.board.remove_from_fleet(2)
-            if orient == "H":
-                for i in range(2):
-                    mid_value = state.board.board[pos[0]][pos[1]+i]
-                    if i == 0 and value in ["□", "?"]:
-                        state.board.board[pos[0]][pos[1]] = "l"
-                        if value != "?": state.board.change_cases_filled(pos[0], pos[1])
-                        state.board.put_water_l(pos[0], pos[1])
-                    elif i == 1 and state.board.board[pos[0]][pos[1]+i] in ["□", "?"]:
-                        state.board.board[pos[0]][pos[1]+i] = "r"
-                        if mid_value != "?": state.board.change_cases_filled(pos[0], pos[1]+i)
-                        state.board.put_water_r(pos[0], pos[1]+i)
-            else:
-                for i in range(2):
-                    mid_value = state.board.board[pos[0]+i][pos[1]]
-                    if i == 0 and value in ["□", "?"]:
-                        state.board.board[pos[0]][pos[1]] = "t"
-                        if value != "?": state.board.change_cases_filled(pos[0], pos[1])
-                        state.board.put_water_t(pos[0], pos[1])
-                    if i == 1 and mid_value in ["□", "?"]:
-                        state.board.board[pos[0]+i][pos[1]] = "b"
-                        if mid_value != "?": state.board.change_cases_filled(pos[0]+i, pos[1])
-                        state.board.put_water_b(pos[0]+i, pos[1])
-
-        elif size == 1:
-                state.board.remove_from_fleet(1)
-                state.board.board[pos[0]][pos[1]] = "c"
-                state.board.change_cases_filled(pos[0], pos[1])
-                state.board.put_water_c(pos[0], pos[1])   
-
-        state.board.make_stuff_happen()
-        for row in range(0, 11, 1):
-            for col in range(0, 11, 1):
-                print(state.board.board[row][col], end=" ")
-            print()
-        print("+----------------------------------+")
-        return state
+        return new_state
 
 
     def goal_test(self, state: BimaruState):
         """Retorna True se e só se o estado passado como argumento é
         um estado objetivo. Deve verificar se todas as posições do tabuleiro
         estão preenchidas de acordo com as regras do problema."""
-        control = 0
+
         if state.board.fleet != []: return False
-        for count in range(10):
-            for col in range(10):
-                if state.board.get_value(count, col) in ["?", "□"]:
-                    print(state.board.get_value(count, col))
-                    return False
-            if int(state.board.board[count][10]) > 0 or int(state.board.board[10][count]) > 0:
+        for row in range(10):
+            if state.board.get_value(row, 10) != "0": 
                 return False
+            for col in range(10):
+                if state.board.get_value(10, col) != "0": 
+                    return False
+                if state.board.get_value(row, col) in ["?", "□"]:
+                    print(state.board.get_value(row, col))
+                    return False
         return True
         
 
@@ -747,12 +717,14 @@ class Bimaru(Problem):
 if __name__ == "__main__":
     board = Board.parse_instance()
     problem  = Bimaru(board)
-    for row in range(0, 11, 1):
+    """for row in range(0, 11, 1):
         for col in range(0, 11, 1):
             print(board.board[row][col], end=" ")
         print()
-    print("+------------------------------------------------+") 
-    depth_first_tree_search(problem)
+    print(board.fleet)
+    print("+------------------------------------------------+") """
+    solution = depth_first_tree_search(problem)
+    solution.state.board.print_board()
 
 
 
@@ -762,10 +734,10 @@ if __name__ == "__main__":
 
 
  """
-    for row in range(0, 11, 1):
+    """for row in range(0, 11, 1):
         for col in range(0, 11, 1):
             print(board.board[row][col], end=" ")
-        print()
+        print()"""
 
     
 
