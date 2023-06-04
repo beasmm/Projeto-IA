@@ -238,6 +238,7 @@ class Board:
                     self.clear_boats_col(col)
 
     def put_water_t(self, row, col):
+        self.change_cases_filled(row, col)
         if row == 0:
             if 0 < col:
                 if self.get_value(row, col - 1) != "W": self.board[row][col - 1] = "."
@@ -260,6 +261,7 @@ class Board:
                 if self.get_value(row + 1, col + 1) != "W": self.board[row + 1][col + 1] = "."
     
     def put_water_b(self, row, col):
+        self.change_cases_filled(row, col)
         if row == 9:
             if 0 < col:
                 if self.get_value(row , col + 1) != "W": self.board[row][col + 1] = "."
@@ -282,6 +284,7 @@ class Board:
                 if self.get_value(row - 1, col + 1) != "W": self.board[row - 1][col + 1] = "."
 
     def put_water_l(self, row, col):
+        self.change_cases_filled(row, col)
         if col == 0:
             if 0 < row:
                 if self.get_value(row - 1, col) != "W": self.board[row - 1][col] = "."
@@ -304,6 +307,7 @@ class Board:
                 if self.get_value(row + 1, col + 1) != "W": self.board[row + 1][col + 1] = "."
 
     def put_water_r(self, row, col):
+        self.change_cases_filled(row, col)
         if col == 9:
             if 0 < row:
                 if self.get_value(row + 1, col) != "W": self.board[row + 1][col] = "."
@@ -368,7 +372,6 @@ class Board:
                     self.board[row + 1][col] = "?"
                     self.change_cases_filled(row + 1, col)         
                     self.put_water_t(row, col)
-                    self.change_cases_filled(row, col)
                     self.put_water_m(row + 1, col)
 
                 """ B """
@@ -376,7 +379,6 @@ class Board:
                     self.board[row - 1][col] = "?"
                     self.change_cases_filled(row - 1, col)
                     self.put_water_b(row, col)
-                    self.change_cases_filled(row, col)
                     self.put_water_m(row - 1, col)
 
                 """ L """
@@ -384,7 +386,6 @@ class Board:
                     self.board[row][col +1] = "?"
                     self.change_cases_filled(row, col + 1)
                     self.put_water_l(row, col)
-                    self.change_cases_filled(row, col)
                     self.put_water_m(row, col + 1)
 
 
@@ -393,7 +394,6 @@ class Board:
                     self.board[row][col -1] = "?"
                     self.change_cases_filled(row, col - 1)
                     self.put_water_r(row, col)
-                    self.change_cases_filled(row, col)
                     self.put_water_m(row, col - 1)
 
 
@@ -449,7 +449,7 @@ class Bimaru(Problem):
         self.initial = BimaruState(board)
         self.called = 0
 
-    def actions(self, state: BimaruState, huhuh):
+    def actions(self, state: BimaruState):
         """Retorna uma lista de ações que podem ser executadas a
         partir do estado passado como argumento."""
         actions = []
@@ -589,7 +589,7 @@ class Bimaru(Problem):
                     elif value == "?" and int(state.board.board[10][col]) >=1 and int(state.board.board[row][10]) >=1:
                         actions.append([(row, col), 1, "H"])
         
-        #print(actions)
+        print(actions)
         return actions
 
 
@@ -604,7 +604,6 @@ class Bimaru(Problem):
         size = action[1]
         orient = action[2]
         value = state.board.get_value(pos[0], pos[1])
-
 
         if size == 4:
             state.board.remove_from_fleet(4)
@@ -710,7 +709,7 @@ class Bimaru(Problem):
         elif size == 1:
                 state.board.remove_from_fleet(1)
                 state.board.board[pos[0]][pos[1]] = "c"
-                if value != "?": state.board.change_cases_filled(pos[0], pos[1])
+                state.board.change_cases_filled(pos[0], pos[1])
                 state.board.put_water_c(pos[0], pos[1])   
 
         state.board.make_stuff_happen()
